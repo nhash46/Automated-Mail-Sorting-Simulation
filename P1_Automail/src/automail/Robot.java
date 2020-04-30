@@ -17,7 +17,7 @@ public class Robot {
     IMailDelivery delivery;
     protected final String id;
     /** Possible states the robot can be in */
-    public enum RobotState { DELIVERING, WAITING, RETURNING }
+    public enum RobotState { DELIVERING, WAITING, RETURNING, WRAPPING, UNWRAPPING }
     public RobotState current_state;
     private int current_floor;
     private int destination_floor;
@@ -59,6 +59,10 @@ public class Robot {
      */
     public void step() throws ExcessiveDeliveryException {    	
     	switch(current_state) {
+    		case WRAPPING:
+    		
+    		case UNWRAPPING:
+    			unWrapItem(specialHand);
     		/** This state is triggered when the robot is returning to the mailroom after a delivery */
     		case RETURNING:
     			/** If its current position is at the mailroom, then the robot should change state */
@@ -87,6 +91,7 @@ public class Robot {
                 break;
     		case DELIVERING:
     			if(current_floor == destination_floor){ // If already here drop off either way
+    				
                     /** Delivery complete, report this to the simulator! */
                     delivery.deliver(deliveryItem);
                     deliveryItem = null;
