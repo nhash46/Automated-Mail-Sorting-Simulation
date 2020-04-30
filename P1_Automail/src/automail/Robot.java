@@ -18,6 +18,8 @@ public class Robot {
     protected final String id;
     /** Possible states the robot can be in */
     public enum RobotState { DELIVERING, WAITING, RETURNING, WRAPPING, DELIVER_FRAGILE }
+    public enum WrappingState { WRAP_STAGE_1, WRAP_STAGE_2 }
+    public WrappingState wrap_state;
     public RobotState current_state;
     private int current_floor;
     private int destination_floor;
@@ -60,7 +62,11 @@ public class Robot {
     public void step() throws ExcessiveDeliveryException {    	
     	switch(current_state) {
     		case WRAPPING:
-    		
+    			switch(wrap_state){
+    				case WRAP_STAGE_1:
+    					// changeState(WrappingState.WRAP_STAGE_2);
+    				case WRAP_STAGE_2:
+    			}
     		/** This state is triggered when the robot is to unwrap and deliver a fragile item */
     		case DELIVER_FRAGILE:
     			assert(specialHand.isWrapped == true);
