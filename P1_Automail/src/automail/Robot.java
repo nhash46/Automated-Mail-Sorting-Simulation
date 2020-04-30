@@ -194,14 +194,11 @@ public class Robot {
 	public void wrapItem(MailItem mailItem) {
 		assert(mailItem.isWrapped == false && mailItem.fragile);
 		mailItem.isWrapped = true;
-		Clock.Tick();
-		Clock.Tick();
 	}
 	
 	public void unWrapItem(MailItem mailItem) {
 		assert(mailItem.isWrapped == true && mailItem.fragile);
 		mailItem.isWrapped = false;
-		Clock.Tick();
 	}
 
 }
