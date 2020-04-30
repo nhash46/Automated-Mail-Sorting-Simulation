@@ -60,7 +60,7 @@ public class Robot {
     public void step() throws ExcessiveDeliveryException {    	
     	switch(current_state) {
     		case WRAPPING:
-    		
+    			
     		case UNWRAPPING:
     			unWrapItem(specialHand);
     		/** This state is triggered when the robot is returning to the mailroom after a delivery */
@@ -123,7 +123,12 @@ public class Robot {
      */
     private void setRoute() {
         /** Set the destination floor */
-        destination_floor = deliveryItem.getDestFloor();
+        if(specialHand != null) {
+        	destination_floor = specialHand.getDestFloor();
+        }
+        else {
+        	destination_floor = deliveryItem.getDestFloor();
+        }
     }
 
     /**
