@@ -17,7 +17,7 @@ public class Robot {
     IMailDelivery delivery;
     protected final String id;
     /** Possible states the robot can be in */
-    public enum RobotState { DELIVERING, WAITING, RETURNING, WRAPPING, UNWRAPPING }
+    public enum RobotState { DELIVERING, WAITING, RETURNING, WRAPPING, DELIVER_FRAGILE }
     public RobotState current_state;
     private int current_floor;
     private int destination_floor;
@@ -60,9 +60,20 @@ public class Robot {
     public void step() throws ExcessiveDeliveryException {    	
     	switch(current_state) {
     		case WRAPPING:
-    			
-    		case UNWRAPPING:
+    		
+    		/** This state is triggered when the robot is to unwrap and deliver a fragile item */
+    		case DELIVER_FRAGILE:
+    			assert(specialHand.isWrapped == true);
     			unWrapItem(specialHand);
+    			delivery.deliver(specialHand);
+    			specialHand = null;
+    			deliveryCounter++;
+    			if(deliveryItem != null) {
+    				setRoute();
+    				changeState(RobotState.DELIVERING);
+    			}
+    			changeState(RobotState.RETURNING);
+    			break;
     		/** This state is triggered when the robot is returning to the mailroom after a delivery */
     		case RETURNING:
     			/** If its current position is at the mailroom, then the robot should change state */
@@ -91,7 +102,10 @@ public class Robot {
                 break;
     		case DELIVERING:
     			if(current_floor == destination_floor){ // If already here drop off either way
-    				
+    				// we need to unwrap the package if it is a fragile item
+    				if(specialHand != null) {
+    					changeState(RobotState.DELIVER_FRAGILE);
+    				}
                     /** Delivery complete, report this to the simulator! */
                     delivery.deliver(deliveryItem);
                     deliveryItem = null;
