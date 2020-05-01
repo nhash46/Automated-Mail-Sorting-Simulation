@@ -97,7 +97,7 @@ public class Robot {
                     delivery.deliver(deliveryItem);
                     deliveryItem = null;
                     deliveryCounter++;
-                    if(deliveryCounter > 2){  // Implies a simulation bug
+                    if(deliveryCounter > 3){  // Implies a simulation bug
                     	throw new ExcessiveDeliveryException();
                     }
                     /** Check if want to return, i.e. if there is no item in the tube*/
@@ -120,7 +120,7 @@ public class Robot {
     			changeWrapState(RobotState.WRAP_STAGE_2);
     			break;
     		case WRAP_STAGE_2:
-    			unwrapItem(specialHand);
+    			wrapItem(specialHand);
     			changeWrapState(RobotState.DELIVERING);
     			break;
     		case DELIVER_FRAGILE:
