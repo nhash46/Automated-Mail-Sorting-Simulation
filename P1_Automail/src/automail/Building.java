@@ -1,4 +1,3 @@
-/*Belong to the streets*/
 package automail;
 
 public class Building {
