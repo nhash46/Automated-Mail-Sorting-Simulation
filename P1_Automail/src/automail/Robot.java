@@ -17,9 +17,7 @@ public class Robot {
     IMailDelivery delivery;
     protected final String id;
     /** Possible states the robot can be in */
-    public enum RobotState { DELIVERING, WAITING, RETURNING, WRAPPING, DELIVER_FRAGILE }
-    public enum WrappingState { WRAP_STAGE_1, WRAP_STAGE_2 }
-    public WrappingState wrap_state;
+    public enum RobotState { DELIVERING, WAITING, RETURNING, WRAP_STAGE_1, WRAP_STAGE_2, DELIVER_FRAGILE }
     public RobotState current_state;
     private int current_floor;
     private int destination_floor;
@@ -61,25 +59,6 @@ public class Robot {
      */
     public void step() throws ExcessiveDeliveryException {    	
     	switch(current_state) {
-    		case WRAPPING:
-    			switch(wrap_state){
-    				case WRAP_STAGE_1:
-    					// changeState(WrappingState.WRAP_STAGE_2);
-    				case WRAP_STAGE_2:
-    			}
-    		/** This state is triggered when the robot is to unwrap and deliver a fragile item */
-    		case DELIVER_FRAGILE:
-    			assert(specialHand.isWrapped == true);
-    			unWrapItem(specialHand);
-    			delivery.deliver(specialHand);
-    			specialHand = null;
-    			deliveryCounter++;
-    			if(deliveryItem != null) {
-    				setRoute();
-    				changeState(RobotState.DELIVERING);
-    			}
-    			changeState(RobotState.RETURNING);
-    			break;
     		/** This state is triggered when the robot is returning to the mailroom after a delivery */
     		case RETURNING:
     			/** If its current position is at the mailroom, then the robot should change state */
@@ -107,8 +86,10 @@ public class Robot {
                 }
                 break;
     		case DELIVERING:
+    			if( (specialHand != null) && (!specialHand.getWrapped()) ) {
+    				changeWrapState(RobotState.WRAP_STAGE_1);
+    			}
     			if(current_floor == destination_floor){ // If already here drop off either way
-    				// we need to unwrap the package if it is a fragile item
     				if(specialHand != null) {
     					changeState(RobotState.DELIVER_FRAGILE);
     				}
@@ -135,6 +116,26 @@ public class Robot {
 	                moveTowards(destination_floor);
     			}
                 break;
+    		case WRAP_STAGE_1:
+    			changeWrapState(RobotState.WRAP_STAGE_2);
+    			break;
+    		case WRAP_STAGE_2:
+    			unwrapItem(specialHand);
+    			changeWrapState(RobotState.DELIVERING);
+    			break;
+    		case DELIVER_FRAGILE:
+    			assert(specialHand.isWrapped);
+    			unwrapItem(specialHand);
+				delivery.deliver(specialHand);
+				specialHand = null;
+				deliveryCounter++;
+				if(deliveryItem != null) {
+					setRoute();
+					changeState(RobotState.DELIVERING);
+				}
+    			changeState(RobotState.RETURNING);
+    			break;
+    			
     	}
     }
 
@@ -143,12 +144,11 @@ public class Robot {
      */
     private void setRoute() {
         /** Set the destination floor */
-        if(specialHand != null) {
-        	destination_floor = specialHand.getDestFloor();
-        }
-        else {
-        	destination_floor = deliveryItem.getDestFloor();
-        }
+    	if(specialHand != null){
+    		destination_floor = specialHand.getDestFloor();
+    		return;
+    	}
+        destination_floor = deliveryItem.getDestFloor();
     }
 
     /**
@@ -167,9 +167,13 @@ public class Robot {
     	return String.format("%s(%1d)", id, (tube == null ? 0 : 1));
     }
     
+    private String getIdSpecial() {
+    	return String.format("%s(%1d)", id, (specialHand == null ? 0 : 1));
+    }
+    
     /**
      * Prints out the change in state
-     * @param nextState the state to which the robot is transitioning
+     * @param nextState the state to which the robot is in transition
      */
     private void changeState(RobotState nextState){
     	assert(!(deliveryItem == null && tube != null));
@@ -181,6 +185,18 @@ public class Robot {
             System.out.printf("T: %3d > %9s-> [%s]%n", Clock.Time(), getIdTube(), deliveryItem.toString());
     	}
     }
+    
+    private void changeWrapState(RobotState nextState){
+    	assert(!(deliveryItem == null && tube != null));
+    	if (current_state != nextState) {
+            System.out.printf("T: %3d > %7s changed from %s to %s%n", Clock.Time(), getIdTube(), current_state, nextState);
+    	}
+    	current_state = nextState;
+    	if(nextState == RobotState.DELIVERING){
+            System.out.printf("T: %3d > %9s-> [%s]%n", Clock.Time(), getIdSpecial(), deliveryItem.toString());
+    	}
+    }
+    
 
 	public MailItem getTube() {
 		return tube;
@@ -198,7 +214,7 @@ public class Robot {
 	}
 
 	public boolean isEmpty() {
-		return (deliveryItem == null && tube == null);
+		return (deliveryItem == null && tube == null && specialHand == null);
 	}
 
 	public void addToHand(MailItem mailItem) throws ItemTooHeavyException, BreakingFragileItemException {
@@ -222,13 +238,13 @@ public class Robot {
 	}
 	
 	public void wrapItem(MailItem mailItem) {
-		assert(mailItem.isWrapped == false && mailItem.fragile);
+		assert((mailItem.isWrapped == false) && (mailItem.fragile));
 		mailItem.isWrapped = true;
 	}
 	
-	public void unWrapItem(MailItem mailItem) {
-		assert(mailItem.isWrapped == true && mailItem.fragile);
+	public void unwrapItem(MailItem mailItem) {
+		assert((mailItem.isWrapped == true) && (mailItem.fragile));
 		mailItem.isWrapped = false;
 	}
-
+	
 }

@@ -55,7 +55,7 @@ public class MailPool implements IMailPool {
 			ListIterator<Robot> i = robots.listIterator();
 			while (i.hasNext()) loadRobot(i);
 		} catch (Exception e) { 
-            throw e; 
+            throw e;
         } 
 	}
 	

@@ -20,7 +20,7 @@ public class MailItem {
     protected final int weight;
     /** The fragile property */
     protected final boolean fragile;
-    /** The wrapped property */
+    /** Wrapped condition */
     protected boolean isWrapped;
 
     /**
@@ -35,6 +35,7 @@ public class MailItem {
         this.arrival_time = arrival_time;
         this.weight = weight;
         this.fragile = isFragile;
+        this.isWrapped = false;
     }
 
     @Override
@@ -72,6 +73,13 @@ public class MailItem {
     */
    public int getWeight(){
        return weight;
+   }
+   
+   /**
+    * @return wrapped status
+    */
+   public boolean getWrapped(){
+       return isWrapped;
    }
    
 	static private int count = 0;
