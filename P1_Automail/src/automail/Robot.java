@@ -221,8 +221,21 @@ public class Robot {
 	}
 
 	public boolean isEmpty() {
-		return (deliveryItem == null && tube == null && specialHand == null);
+		return (handEmpty() == true && tubeEmpty() == true && specialEmpty() == true);
 	}
+	
+	public boolean handEmpty() {
+		return deliveryItem == null;
+	}
+	
+	public boolean tubeEmpty() {
+		return tube == null;
+	}
+	
+	public boolean specialEmpty() {
+		return specialHand == null;
+	}
+	
 
 	public void addToHand(MailItem mailItem) throws ItemTooHeavyException, BreakingFragileItemException {
 		assert(deliveryItem == null);
