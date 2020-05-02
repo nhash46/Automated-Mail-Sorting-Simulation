@@ -224,6 +224,10 @@ public class Robot {
 		return (handEmpty() == true && tubeEmpty() == true && specialEmpty() == true);
 	}
 	
+	public boolean spaceLeft() {
+		return (handEmpty() == true || tubeEmpty() == true || specialEmpty() == true);
+	}
+	
 	public boolean handEmpty() {
 		return deliveryItem == null;
 	}

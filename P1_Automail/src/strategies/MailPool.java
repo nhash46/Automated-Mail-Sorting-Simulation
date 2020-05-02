@@ -62,6 +62,7 @@ public class MailPool implements IMailPool {
 	private void loadRobot(ListIterator<Robot> i) throws ItemTooHeavyException, BreakingFragileItemException {
 		Robot robot = i.next();
 		assert(robot.isEmpty());
+		int initial = pool.size(), tries = 0;
 		// System.out.printf("P: %3d%n", pool.size());
 		ListIterator<Item> j = pool.listIterator();
 		while (pool.size() > 0) {
@@ -90,10 +91,13 @@ public class MailPool implements IMailPool {
 					}
 				}
 				
+				tries++;
 				if(added == false) {
 					pool.add(current);
+					if( (robot.spaceLeft() == false) || (tries > initial) ) {
+						break;
+					}
 				}
-				
 			}
 			
 		}
