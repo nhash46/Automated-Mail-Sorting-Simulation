@@ -1,4 +1,5 @@
 package strategies;
+import java.util.Properties;
 
 import automail.IMailDelivery;
 import automail.Robot;
@@ -8,7 +9,7 @@ public class Automail {
     public Robot[] robots;
     public IMailPool mailPool;
     
-    public Automail(IMailPool mailPool, IMailDelivery delivery, int numRobots) {
+    public Automail(IMailPool mailPool, IMailDelivery delivery, int numRobots, Properties automailProperties) {
     	// Swap between simple provided strategies and your strategies here
     	    	
     	/** Initialize the MailPool */
@@ -17,7 +18,7 @@ public class Automail {
     	
     	/** Initialize robots */
     	robots = new Robot[numRobots];
-    	for (int i = 0; i < numRobots; i++) robots[i] = new Robot(delivery, mailPool);
+    	for (int i = 0; i < numRobots; i++) robots[i] = new Robot(delivery, mailPool, automailProperties);
     }
     
 }
