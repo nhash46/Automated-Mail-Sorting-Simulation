@@ -1,4 +1,5 @@
 package automail;
+import java.util.Properties;
 
 import exceptions.BreakingFragileItemException;
 import exceptions.ExcessiveDeliveryException;
@@ -24,6 +25,9 @@ public class Robot {
     private IMailPool mailPool;
     private boolean receivedDispatch;
     
+    private Properties automailProperties;
+    private boolean CAUTION_ENABLED;
+    
     private MailItem deliveryItem = null;
     private MailItem tube = null;
     private MailItem specialHand = null;
@@ -38,15 +42,17 @@ public class Robot {
      * @param delivery governs the final delivery
      * @param mailPool is the source of mail items
      */
-    public Robot(IMailDelivery delivery, IMailPool mailPool){
+    public Robot(IMailDelivery delivery, IMailPool mailPool, Properties automailProperties){
     	id = "R" + hashCode();
         // current_state = RobotState.WAITING;
     	current_state = RobotState.RETURNING;
         current_floor = Building.MAILROOM_LOCATION;
         this.delivery = delivery;
         this.mailPool = mailPool;
+        this.automailProperties = automailProperties;
         this.receivedDispatch = false;
         this.deliveryCounter = 0;
+        this.CAUTION_ENABLED = Boolean.parseBoolean(automailProperties.getProperty("Caution"));
     }
     
     public void dispatch() {
@@ -79,6 +85,7 @@ public class Robot {
     		case WAITING:
                 /** If the StorageTube is ready and the Robot is waiting in the mailroom then start the delivery */
                 if(!isEmpty() && receivedDispatch){
+                	System.out.println("Caution enabled in Robot: " + CAUTION_ENABLED);
                 	receivedDispatch = false;
                 	deliveryCounter = 0; // reset delivery counter
         			setRoute();
@@ -97,7 +104,7 @@ public class Robot {
                     delivery.deliver(deliveryItem);
                     deliveryItem = null;
                     deliveryCounter++;
-                    if(deliveryCounter > 2){  // Implies a simulation bug
+                    if(deliveryCounter > 3){  // Implies a simulation bug
                     	throw new ExcessiveDeliveryException();
                     }
                     /** Check if want to return, i.e. if there is no item in the tube*/
@@ -120,7 +127,7 @@ public class Robot {
     			changeWrapState(RobotState.WRAP_STAGE_2);
     			break;
     		case WRAP_STAGE_2:
-    			unwrapItem(specialHand);
+    			wrapItem(specialHand);
     			changeWrapState(RobotState.DELIVERING);
     			break;
     		case DELIVER_FRAGILE:
