@@ -27,7 +27,6 @@ public class Simulation {
     private static boolean STATISTICS_ENABLED;
     
     private static ArrayList<MailItem> MAIL_DELIVERED;
-    private static ArrayList<MailItem> MAIL_REJECTED;
     private static double total_score = 0;
 
     public static void main(String[] args) throws IOException, InstantiationException, IllegalAccessException, ClassNotFoundException {
@@ -142,21 +141,7 @@ public class Simulation {
     			}
     		}
     	}
-    	
-    	/** Confirm item has been rejected */
-    	public void reject(MailItem deliveryItem) {
-    		if(!MAIL_REJECTED.contains(deliveryItem)){
-    			MAIL_REJECTED.add(deliveryItem);
-                System.out.printf("T: %3d > Reject(%4d) [%s]%n", Clock.Time(), MAIL_REJECTED.size(), deliveryItem.toString());
-    		}
-    		else{
-    			try {
-    				throw new MailAlreadyDeliveredException();
-    			} catch (MailAlreadyDeliveredException e) {
-    				e.printStackTrace();
-    			}
-    		}
-    	}
+
     }
     
     private static double calculateDeliveryScore(MailItem deliveryItem) {
