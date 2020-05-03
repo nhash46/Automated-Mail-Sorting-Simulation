@@ -77,14 +77,50 @@ public class MailPool implements IMailPool {
 					}
 					robot.dispatch(); // send the robot off if it has any items to deliver
 					i.remove();       // remove from mailPool queue
-				} catch (Exception e) { 
+				}catch (Exception e) {
 		            throw e; 
 		        	}
 			}
 		}
 		
 		else {
-			//do nothing
+			try {
+				while (pool.size() > 0) {
+					if(robot.spaceLeft() == true) {
+						Item current = j.next();
+						j.remove();
+						boolean added = false;
+						
+						if(current.mailItem.getFragile() == true) {
+							if(robot.specialEmpty() == true) {
+								robot.addToSpecialHand(current.mailItem);
+								added = true;
+							}	
+						}
+						
+						else {
+							if(robot.handEmpty() == true) {
+								robot.addToHand(current.mailItem);
+								added = true;
+							}
+							if( (robot.tubeEmpty() == true) && (added == false)) {
+								robot.addToTube(current.mailItem);
+								added = true;
+							}
+						}
+						
+						if(added == false) {
+							pool.add(current);
+							break;
+						}
+						
+					}
+				}
+				robot.dispatch(); // send the robot off if it has any items to deliver
+				i.remove();       // remove from mailPool queue 
+			}catch (Exception e) {
+	            throw e; 
+        		}
 		}
 	}
 	
@@ -133,8 +169,8 @@ public class MailPool implements IMailPool {
 		}
 		robot.dispatch(); // send the robot off if it has any items to deliver
 		i.remove();       // remove from mailPool queue 
-	}
-	*/
+	}*/
+	
 
 	@Override
 	public void registerWaiting(Robot robot) { // assumes won't be there already
