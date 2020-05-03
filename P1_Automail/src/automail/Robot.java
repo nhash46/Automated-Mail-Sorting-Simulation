@@ -85,7 +85,6 @@ public class Robot {
     		case WAITING:
                 /** If the StorageTube is ready and the Robot is waiting in the mailroom then start the delivery */
                 if(!isEmpty() && receivedDispatch){
-                	System.out.println("Caution enabled in Robot: " + CAUTION_ENABLED);
                 	receivedDispatch = false;
                 	deliveryCounter = 0; // reset delivery counter
         			setRoute();
