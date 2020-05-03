@@ -4,6 +4,7 @@ import java.util.LinkedList;
 import java.util.Comparator;
 import java.util.ListIterator;
 
+import automail.IMailDelivery;
 import automail.MailItem;
 import automail.Robot;
 import exceptions.BreakingFragileItemException;
@@ -36,6 +37,8 @@ public class MailPool implements IMailPool {
 	
 	private LinkedList<Item> pool;
 	private LinkedList<Robot> robots;
+	
+	private IMailDelivery delivery;
 
 	public MailPool(int nrobots){
 		// Start empty
@@ -67,7 +70,7 @@ public class MailPool implements IMailPool {
 		boolean caution_mode = robot.isCautionMode();
 		boolean fragile_mode = robot.isFragileMode();
 		
-		if( /*(caution_mode == false) &&*/ (fragile_mode == false) ) {
+		if( (fragile_mode == false) ) {
 			if (pool.size() > 0) {
 				try {
 					robot.addToHand(j.next().mailItem); // hand first as we want higher priority delivered first
@@ -95,6 +98,7 @@ public class MailPool implements IMailPool {
 							System.out.println("SPECIAL ITEM CAME IN HOT");
 							if(caution_mode == false) {
 								System.out.println(" -But rejected cause caution mode off");
+								delivery.reject(current.mailItem);
 								continue;
 							}
 							if(robot.specialEmpty() == true) {
