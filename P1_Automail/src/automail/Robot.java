@@ -15,7 +15,7 @@ public class Robot {
 	
     static public final int INDIVIDUAL_MAX_WEIGHT = 2000;
 
-    IMailDelivery delivery;
+    private IMailDelivery delivery;
     protected final String id;
     /** Possible states the robot can be in */
     public enum RobotState { DELIVERING, WAITING, RETURNING, WRAP_STAGE_1, WRAP_STAGE_2, DELIVER_FRAGILE }
@@ -227,6 +227,10 @@ public class Robot {
 	
 	public boolean isFragileMode() {
 		return FRAGILE_ENABLED;
+	}
+	
+	public IMailDelivery getDelivery() {
+		return delivery;
 	}
 
 	public boolean isEmpty() {
