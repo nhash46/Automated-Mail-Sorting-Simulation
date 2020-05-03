@@ -26,6 +26,7 @@ public class Robot {
     private boolean receivedDispatch;
     
     private boolean CAUTION_ENABLED;
+    private boolean FRAGILE_ENABLED;
     
     private MailItem deliveryItem = null;
     private MailItem tube = null;
@@ -51,8 +52,9 @@ public class Robot {
         //this.automailProperties = automailProperties;
         this.receivedDispatch = false;
         this.deliveryCounter = 0;
-        //this.CAUTION_ENABLED = true;
         this.CAUTION_ENABLED = Boolean.parseBoolean(automailProperties.getProperty("Caution"));
+        this.FRAGILE_ENABLED = Boolean.parseBoolean(automailProperties.getProperty("Fragile"));
+        
     }
     
     public void dispatch() {
@@ -220,8 +222,12 @@ public class Robot {
 		return hash;
 	}
 	
-	public boolean isCautious() {
+	public boolean isCautionMode() {
 		return CAUTION_ENABLED;
+	}
+	
+	public boolean isFragileMode() {
+		return FRAGILE_ENABLED;
 	}
 
 	public boolean isEmpty() {

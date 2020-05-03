@@ -64,9 +64,10 @@ public class MailPool implements IMailPool {
 		assert(robot.isEmpty());
 		// System.out.printf("P: %3d%n", pool.size());
 		ListIterator<Item> j = pool.listIterator();
-		boolean caution_mode = robot.isCautious();
+		boolean caution_mode = robot.isCautionMode();
+		boolean fragile_mode = robot.isFragileMode();
 		
-		if(caution_mode == false) {
+		if( (caution_mode == false) && (fragile_mode == false) ) {
 			if (pool.size() > 0) {
 				try {
 					robot.addToHand(j.next().mailItem); // hand first as we want higher priority delivered first
