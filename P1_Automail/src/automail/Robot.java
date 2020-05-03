@@ -218,6 +218,10 @@ public class Robot {
 		if (hash == null) { hash = count++; hashMap.put(hash0, hash); }
 		return hash;
 	}
+	
+	public boolean isCautious() {
+		return CAUTION_ENABLED;
+	}
 
 	public boolean isEmpty() {
 		return (handEmpty() == true && tubeEmpty() == true && specialEmpty() == true);

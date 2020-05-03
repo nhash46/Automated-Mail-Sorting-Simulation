@@ -64,23 +64,28 @@ public class MailPool implements IMailPool {
 		assert(robot.isEmpty());
 		// System.out.printf("P: %3d%n", pool.size());
 		ListIterator<Item> j = pool.listIterator();
-		boolean caution_mode = robot.
-		switch(caution_mode) {
+		boolean caution_mode = robot.isCautious();
 		
-		}
-		if (pool.size() > 0) {
-			try {
-			robot.addToHand(j.next().mailItem); // hand first as we want higher priority delivered first
-			j.remove();
+		if(caution_mode == false) {
 			if (pool.size() > 0) {
-				robot.addToTube(j.next().mailItem);
-				j.remove();
+				try {
+					robot.addToHand(j.next().mailItem); // hand first as we want higher priority delivered first
+					j.remove();
+					if (pool.size() > 0) {
+						robot.addToTube(j.next().mailItem);
+						j.remove();
+					}
+					robot.dispatch(); // send the robot off if it has any items to deliver
+					i.remove();       // remove from mailPool queue
+				} catch (Exception e) { 
+		            throw e; 
+		        	} 
 			}
-			robot.dispatch(); // send the robot off if it has any items to deliver
-			i.remove();       // remove from mailPool queue
-			} catch (Exception e) { 
-	            throw e; 
-	        } 
+		}
+		else {
+			//do nothing
+		}
+
 	}
 	
 	/*private void loadRobot(ListIterator<Robot> i) throws ItemTooHeavyException, BreakingFragileItemException {
