@@ -67,7 +67,7 @@ public class MailPool implements IMailPool {
 		boolean caution_mode = robot.isCautionMode();
 		boolean fragile_mode = robot.isFragileMode();
 		
-		if( (caution_mode == false) && (fragile_mode == false) ) {
+		if( /*(caution_mode == false) &&*/ (fragile_mode == false) ) {
 			if (pool.size() > 0) {
 				try {
 					robot.addToHand(j.next().mailItem); // hand first as we want higher priority delivered first
@@ -83,7 +83,6 @@ public class MailPool implements IMailPool {
 		        	}
 			}
 		}
-		
 		else {
 			try {
 				while (pool.size() > 0) {
@@ -93,6 +92,11 @@ public class MailPool implements IMailPool {
 						boolean added = false;
 						
 						if(current.mailItem.getFragile() == true) {
+							System.out.println("SPECIAL ITEM CAME IN HOT");
+							if(caution_mode == false) {
+								System.out.println(" -But rejected cause caution mode off");
+								continue;
+							}
 							if(robot.specialEmpty() == true) {
 								robot.addToSpecialHand(current.mailItem);
 								added = true;

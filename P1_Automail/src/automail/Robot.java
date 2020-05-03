@@ -49,7 +49,7 @@ public class Robot {
         current_floor = Building.MAILROOM_LOCATION;
         this.delivery = delivery;
         this.mailPool = mailPool;
-        //this.automailProperties = automailProperties;
+
         this.receivedDispatch = false;
         this.deliveryCounter = 0;
         this.CAUTION_ENABLED = Boolean.parseBoolean(automailProperties.getProperty("Caution"));
