@@ -25,7 +25,6 @@ public class Robot {
     private IMailPool mailPool;
     private boolean receivedDispatch;
     
-    private Properties automailProperties;
     private boolean CAUTION_ENABLED;
     
     private MailItem deliveryItem = null;
@@ -49,9 +48,10 @@ public class Robot {
         current_floor = Building.MAILROOM_LOCATION;
         this.delivery = delivery;
         this.mailPool = mailPool;
-        this.automailProperties = automailProperties;
+        //this.automailProperties = automailProperties;
         this.receivedDispatch = false;
         this.deliveryCounter = 0;
+        //this.CAUTION_ENABLED = true;
         this.CAUTION_ENABLED = Boolean.parseBoolean(automailProperties.getProperty("Caution"));
     }
     
@@ -219,10 +219,31 @@ public class Robot {
 		if (hash == null) { hash = count++; hashMap.put(hash0, hash); }
 		return hash;
 	}
+	
+	public boolean isCautious() {
+		return CAUTION_ENABLED;
+	}
 
 	public boolean isEmpty() {
-		return (deliveryItem == null && tube == null && specialHand == null);
+		return (handEmpty() == true && tubeEmpty() == true && specialEmpty() == true);
 	}
+	
+	public boolean spaceLeft() {
+		return (handEmpty() == true || tubeEmpty() == true || specialEmpty() == true);
+	}
+	
+	public boolean handEmpty() {
+		return deliveryItem == null;
+	}
+	
+	public boolean tubeEmpty() {
+		return tube == null;
+	}
+	
+	public boolean specialEmpty() {
+		return specialHand == null;
+	}
+	
 
 	public void addToHand(MailItem mailItem) throws ItemTooHeavyException, BreakingFragileItemException {
 		assert(deliveryItem == null);

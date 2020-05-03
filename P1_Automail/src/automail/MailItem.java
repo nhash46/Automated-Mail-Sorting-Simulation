@@ -76,6 +76,14 @@ public class MailItem {
    }
    
    /**
+   *
+   * @return fragile property of item
+   */
+   public boolean getFragile() {
+	   return fragile;
+   }
+   
+   /**
     * @return wrapped status
     */
    public boolean getWrapped(){

@@ -64,21 +64,66 @@ public class MailPool implements IMailPool {
 		assert(robot.isEmpty());
 		// System.out.printf("P: %3d%n", pool.size());
 		ListIterator<Item> j = pool.listIterator();
-		if (pool.size() > 0) {
-			try {
-			robot.addToHand(j.next().mailItem); // hand first as we want higher priority delivered first
-			j.remove();
+		boolean caution_mode = robot.isCautious();
+		
+		if(caution_mode == false) {
 			if (pool.size() > 0) {
-				robot.addToTube(j.next().mailItem);
-				j.remove();
+				try {
+					robot.addToHand(j.next().mailItem); // hand first as we want higher priority delivered first
+					j.remove();
+					if (pool.size() > 0) {
+						robot.addToTube(j.next().mailItem);
+						j.remove();
+					}
+					robot.dispatch(); // send the robot off if it has any items to deliver
+					i.remove();       // remove from mailPool queue
+				}catch (Exception e) {
+		            throw e; 
+		        	}
 			}
-			robot.dispatch(); // send the robot off if it has any items to deliver
-			i.remove();       // remove from mailPool queue
-			} catch (Exception e) { 
+		}
+		
+		else {
+			try {
+				while (pool.size() > 0) {
+					if(robot.spaceLeft() == true) {
+						Item current = j.next();
+						j.remove();
+						boolean added = false;
+						
+						if(current.mailItem.getFragile() == true) {
+							if(robot.specialEmpty() == true) {
+								robot.addToSpecialHand(current.mailItem);
+								added = true;
+							}	
+						}
+						
+						else {
+							if(robot.handEmpty() == true) {
+								robot.addToHand(current.mailItem);
+								added = true;
+							}
+							if( (robot.tubeEmpty() == true) && (added == false)) {
+								robot.addToTube(current.mailItem);
+								added = true;
+							}
+						}
+						
+						if(added == false) {
+							pool.add(current);
+							break;
+						}
+						
+					}
+				}
+				robot.dispatch(); // send the robot off if it has any items to deliver
+				i.remove();       // remove from mailPool queue 
+			}catch (Exception e) {
 	            throw e; 
-	        } 
+        		}
 		}
 	}
+	
 
 	@Override
 	public void registerWaiting(Robot robot) { // assumes won't be there already
