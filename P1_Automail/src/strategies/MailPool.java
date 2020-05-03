@@ -37,8 +37,6 @@ public class MailPool implements IMailPool {
 	
 	private LinkedList<Item> pool;
 	private LinkedList<Robot> robots;
-	
-	private IMailDelivery delivery;
 
 	public MailPool(int nrobots){
 		// Start empty
@@ -98,7 +96,7 @@ public class MailPool implements IMailPool {
 							System.out.println("SPECIAL ITEM CAME IN HOT");
 							if(caution_mode == false) {
 								System.out.println(" -But rejected cause caution mode off");
-								delivery.reject(current.mailItem);
+								robot.getDelivery().reject(current.mailItem);
 								continue;
 							}
 							if(robot.specialEmpty() == true) {
