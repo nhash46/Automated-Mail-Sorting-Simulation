@@ -51,6 +51,7 @@ public class Robot {
         //this.automailProperties = automailProperties;
         this.receivedDispatch = false;
         this.deliveryCounter = 0;
+        //this.CAUTION_ENABLED = true;
         this.CAUTION_ENABLED = Boolean.parseBoolean(automailProperties.getProperty("Caution"));
     }
     

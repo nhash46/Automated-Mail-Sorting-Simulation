@@ -124,53 +124,6 @@ public class MailPool implements IMailPool {
 		}
 	}
 	
-	/*private void loadRobot(ListIterator<Robot> i) throws ItemTooHeavyException, BreakingFragileItemException {
-		Robot robot = i.next();
-		//assert(robot.isEmpty());
-		//int max_try = 10, tries = 0;
-		// System.out.printf("P: %3d%n", pool.size());
-		ListIterator<Item> j = pool.listIterator();
-		while (pool.size() > 0) {
-			
-			if(robot.spaceLeft() == true) {
-				
-				Item current = j.next();
-				j.remove();
-				boolean added = false;
-				
-				if(current.mailItem.getFragile() == true) {
-					if(robot.specialEmpty() == true) {
-						robot.addToSpecialHand(current.mailItem);
-						added = true;
-					}	
-				}
-				
-				else {
-					if(robot.handEmpty() == true) {
-						robot.addToHand(current.mailItem);
-						added = true;
-					}
-					if( (robot.tubeEmpty() == true) && (added == false)) {
-						robot.addToTube(current.mailItem);
-						added = true;
-					}
-				}
-				
-				//tries++;
-				if(added == false) {
-					pool.add(current);
-					break;
-					//if( (robot.spaceLeft() == false) || (tries > max_try) ) {
-						//System.out.println("heree3");
-						//break;
-					//}
-				}
-			}
-		}
-		robot.dispatch(); // send the robot off if it has any items to deliver
-		i.remove();       // remove from mailPool queue 
-	}*/
-	
 
 	@Override
 	public void registerWaiting(Robot robot) { // assumes won't be there already
