@@ -10,5 +10,12 @@ public interface IMailDelivery {
      * @param mailItem the mail item being delivered.
      */
 	void deliver(MailItem mailItem);
+	
+	
+	/**
+     * Rejects an item before loading to robot
+     * @param mailItem the mail item being rejected.
+     */
+	void reject(MailItem mailItem);
     
 }

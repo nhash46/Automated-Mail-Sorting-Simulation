@@ -27,6 +27,7 @@ public class Simulation {
     private static boolean STATISTICS_ENABLED;
     
     private static ArrayList<MailItem> MAIL_DELIVERED;
+    private static ArrayList<MailItem> MAIL_REJECTED;
     private static double total_score = 0;
 
     public static void main(String[] args) throws IOException, InstantiationException, IllegalAccessException, ClassNotFoundException {
@@ -85,6 +86,7 @@ public class Simulation {
 		// End properties
 		
         MAIL_DELIVERED = new ArrayList<MailItem>();
+        MAIL_REJECTED = new ArrayList<MailItem>();
                 
         /** Used to see whether a seed is initialized or not */
         HashMap<Boolean, Integer> seedMap = new HashMap<>();
@@ -106,7 +108,7 @@ public class Simulation {
         
         /** Initiate all the mail */
         mailGenerator.generateAllMail(FRAGILE_ENABLED);
-        while(MAIL_DELIVERED.size() != mailGenerator.MAIL_TO_CREATE) {
+        while( (MAIL_DELIVERED.size() + MAIL_REJECTED.size()) != mailGenerator.MAIL_TO_CREATE) {
             mailGenerator.step();
             try {
                 automail.mailPool.step();
@@ -132,6 +134,21 @@ public class Simulation {
                 System.out.printf("T: %3d > Deliv(%4d) [%s]%n", Clock.Time(), MAIL_DELIVERED.size(), deliveryItem.toString());
     			// Calculate delivery score
     			total_score += calculateDeliveryScore(deliveryItem);
+    		}
+    		else{
+    			try {
+    				throw new MailAlreadyDeliveredException();
+    			} catch (MailAlreadyDeliveredException e) {
+    				e.printStackTrace();
+    			}
+    		}
+    	}
+    	
+    	/** Reject the deliveryItem */
+    	public void reject(MailItem deliveryItem){
+    		if(!MAIL_REJECTED.contains(deliveryItem)){
+    			MAIL_REJECTED.add(deliveryItem);
+                System.out.printf("T: %3d > Rejected(%4d) [%s]%n", Clock.Time(), MAIL_REJECTED.size(), deliveryItem.toString());
     		}
     		else{
     			try {
