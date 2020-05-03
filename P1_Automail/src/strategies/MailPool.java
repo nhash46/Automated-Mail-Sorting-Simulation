@@ -62,12 +62,36 @@ public class MailPool implements IMailPool {
 	private void loadRobot(ListIterator<Robot> i) throws ItemTooHeavyException, BreakingFragileItemException {
 		Robot robot = i.next();
 		assert(robot.isEmpty());
-		int initial = pool.size(), tries = 0;
+		// System.out.printf("P: %3d%n", pool.size());
+		ListIterator<Item> j = pool.listIterator();
+		boolean caution_mode = robot.
+		switch(caution_mode) {
+		
+		}
+		if (pool.size() > 0) {
+			try {
+			robot.addToHand(j.next().mailItem); // hand first as we want higher priority delivered first
+			j.remove();
+			if (pool.size() > 0) {
+				robot.addToTube(j.next().mailItem);
+				j.remove();
+			}
+			robot.dispatch(); // send the robot off if it has any items to deliver
+			i.remove();       // remove from mailPool queue
+			} catch (Exception e) { 
+	            throw e; 
+	        } 
+	}
+	
+	/*private void loadRobot(ListIterator<Robot> i) throws ItemTooHeavyException, BreakingFragileItemException {
+		Robot robot = i.next();
+		//assert(robot.isEmpty());
+		//int max_try = 10, tries = 0;
 		// System.out.printf("P: %3d%n", pool.size());
 		ListIterator<Item> j = pool.listIterator();
 		while (pool.size() > 0) {
 			
-			if(robot.isEmpty() == false) {
+			if(robot.spaceLeft() == true) {
 				
 				Item current = j.next();
 				j.remove();
@@ -91,19 +115,21 @@ public class MailPool implements IMailPool {
 					}
 				}
 				
-				tries++;
+				//tries++;
 				if(added == false) {
 					pool.add(current);
-					if( (robot.spaceLeft() == false) || (tries > initial) ) {
-						break;
-					}
+					break;
+					//if( (robot.spaceLeft() == false) || (tries > max_try) ) {
+						//System.out.println("heree3");
+						//break;
+					//}
 				}
 			}
-			
 		}
 		robot.dispatch(); // send the robot off if it has any items to deliver
 		i.remove();       // remove from mailPool queue 
 	}
+	*/
 
 	@Override
 	public void registerWaiting(Robot robot) { // assumes won't be there already
