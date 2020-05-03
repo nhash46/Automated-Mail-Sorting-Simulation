@@ -79,13 +79,13 @@ public class MailPool implements IMailPool {
 					i.remove();       // remove from mailPool queue
 				} catch (Exception e) { 
 		            throw e; 
-		        	} 
+		        	}
 			}
 		}
+		
 		else {
 			//do nothing
 		}
-
 	}
 	
 	/*private void loadRobot(ListIterator<Robot> i) throws ItemTooHeavyException, BreakingFragileItemException {
