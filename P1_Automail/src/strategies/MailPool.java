@@ -131,6 +131,7 @@ public class MailPool implements IMailPool {
 						
 						if(added == false) {
 							pool.add(current);
+							System.out.println("ADDED BACK TO POOL");
 							break;
 						}
 						
