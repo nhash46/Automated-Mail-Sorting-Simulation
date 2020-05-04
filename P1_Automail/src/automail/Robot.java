@@ -276,11 +276,13 @@ public class Robot {
 	
 	public void wrapItem(MailItem mailItem) {
 		assert((mailItem.isWrapped == false) && (mailItem.fragile));
+		System.out.println("WRAPPING ITEM");
 		mailItem.isWrapped = true;
 	}
 	
 	public void unwrapItem(MailItem mailItem) {
 		assert((mailItem.isWrapped == true) && (mailItem.fragile));
+		System.out.println("UNWRAPPING ITEM");
 		mailItem.isWrapped = false;
 	}
 	

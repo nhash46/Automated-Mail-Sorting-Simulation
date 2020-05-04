@@ -86,7 +86,7 @@ public class MailPool implements IMailPool {
 		}
 		else {
 			try {
-				while (pool.size() > 0) {
+				while ( (pool.size() > 0) && (robot.spaceLeft() == true)) {
 					if(robot.spaceLeft() == true) {
 						Item current = j.next();
 						j.remove();
@@ -101,6 +101,7 @@ public class MailPool implements IMailPool {
 							}
 							if(robot.specialEmpty() == true) {
 								robot.addToSpecialHand(current.mailItem);
+								System.out.println("ADDED TO SPECIAL HAND");
 								added = true;
 							}	
 						}
@@ -108,10 +109,20 @@ public class MailPool implements IMailPool {
 						else {
 							if(robot.handEmpty() == true) {
 								robot.addToHand(current.mailItem);
+								
+								if(caution_mode == true) {
+									System.out.println("ADDED TO HAAAAAND");
+								}
+								
 								added = true;
 							}
 							if( (robot.tubeEmpty() == true) && (added == false)) {
 								robot.addToTube(current.mailItem);
+								
+								if(caution_mode == true) {
+									System.out.println("ADDED TO TUUUUUUBE");
+								}
+								
 								added = true;
 							}
 						}
