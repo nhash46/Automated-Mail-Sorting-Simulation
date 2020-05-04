@@ -99,11 +99,13 @@ public class MailPool implements IMailPool {
 								robot.getDelivery().reject(current.mailItem);
 								continue;
 							}
-							if(robot.specialEmpty() == true) {
-								robot.addToSpecialHand(current.mailItem);
-								System.out.println("ADDED TO SPECIAL HAND");
-								added = true;
-							}	
+							else {
+								if(robot.specialEmpty() == true) {
+									robot.addToSpecialHand(current.mailItem);
+									System.out.println("ADDED TO SPECIAL HAND");
+									added = true;
+								}
+							}
 						}
 						
 						else {
