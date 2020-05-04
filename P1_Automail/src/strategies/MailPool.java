@@ -106,7 +106,7 @@ public class MailPool implements IMailPool {
 							}	
 						}
 						
-						if(!(current.mailItem.getFragile())) {
+						else {
 							if(robot.handEmpty() == true) {
 								robot.addToHand(current.mailItem);
 								
