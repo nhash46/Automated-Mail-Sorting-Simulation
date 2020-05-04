@@ -15,7 +15,7 @@ public class Robot {
 	
     static public final int INDIVIDUAL_MAX_WEIGHT = 2000;
 
-    IMailDelivery delivery;
+    private IMailDelivery delivery;
     protected final String id;
     /** Possible states the robot can be in */
     public enum RobotState { DELIVERING, WAITING, RETURNING, WRAP_STAGE_1, WRAP_STAGE_2, DELIVER_FRAGILE }
@@ -25,8 +25,8 @@ public class Robot {
     private IMailPool mailPool;
     private boolean receivedDispatch;
     
-    private Properties automailProperties;
     private boolean CAUTION_ENABLED;
+    private boolean FRAGILE_ENABLED;
     
     private MailItem deliveryItem = null;
     private MailItem tube = null;
@@ -49,10 +49,12 @@ public class Robot {
         current_floor = Building.MAILROOM_LOCATION;
         this.delivery = delivery;
         this.mailPool = mailPool;
-        this.automailProperties = automailProperties;
+
         this.receivedDispatch = false;
         this.deliveryCounter = 0;
         this.CAUTION_ENABLED = Boolean.parseBoolean(automailProperties.getProperty("Caution"));
+        this.FRAGILE_ENABLED = Boolean.parseBoolean(automailProperties.getProperty("Fragile"));
+        
     }
     
     public void dispatch() {
@@ -219,10 +221,39 @@ public class Robot {
 		if (hash == null) { hash = count++; hashMap.put(hash0, hash); }
 		return hash;
 	}
+	
+	public boolean isCautionMode() {
+		return CAUTION_ENABLED;
+	}
+	
+	public boolean isFragileMode() {
+		return FRAGILE_ENABLED;
+	}
+	
+	public IMailDelivery getDelivery() {
+		return delivery;
+	}
 
 	public boolean isEmpty() {
-		return (deliveryItem == null && tube == null && specialHand == null);
+		return (handEmpty() == true && tubeEmpty() == true && specialEmpty() == true);
 	}
+	
+	public boolean spaceLeft() {
+		return (handEmpty() == true || tubeEmpty() == true || specialEmpty() == true);
+	}
+	
+	public boolean handEmpty() {
+		return deliveryItem == null;
+	}
+	
+	public boolean tubeEmpty() {
+		return tube == null;
+	}
+	
+	public boolean specialEmpty() {
+		return specialHand == null;
+	}
+	
 
 	public void addToHand(MailItem mailItem) throws ItemTooHeavyException, BreakingFragileItemException {
 		assert(deliveryItem == null);
@@ -246,11 +277,13 @@ public class Robot {
 	
 	public void wrapItem(MailItem mailItem) {
 		assert((mailItem.isWrapped == false) && (mailItem.fragile));
+		System.out.println("WRAPPING ITEM");
 		mailItem.isWrapped = true;
 	}
 	
 	public void unwrapItem(MailItem mailItem) {
 		assert((mailItem.isWrapped == true) && (mailItem.fragile));
+		System.out.println("UNWRAPPING ITEM");
 		mailItem.isWrapped = false;
 	}
 	
