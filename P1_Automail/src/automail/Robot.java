@@ -103,6 +103,7 @@ public class Robot {
     			if(current_floor == destination_floor){ // If already here drop off either way
     				if(specialHand != null) {
     					changeState(RobotState.DELIVER_FRAGILE);
+    					break;
     				}
                     /** Delivery complete, report this to the simulator! */
                     delivery.deliver(deliveryItem);
@@ -196,14 +197,23 @@ public class Robot {
      * @param nextState the state to which the robot is in transition
      */
     private void changeState(RobotState nextState){
-    	//assert(!(deliveryItem == null && tube != null));
+    	if(CAUTION_ENABLED && FRAGILE_ENABLED) {
+    		assert(specialHand != null);
+    	}
+    	assert(!(deliveryItem == null && tube != null));
     	if (current_state != nextState) {
             System.out.printf("T: %3d > %7s changed from %s to %s%n", Clock.Time(), getIdTube(), current_state, nextState);
     	}
     	current_state = nextState;
-    	if(nextState == RobotState.DELIVERING){
+    	if(nextState == RobotState.DELIVERING && (specialHand == null)){
             System.out.printf("T: %3d > %9s-> [%s]%n", Clock.Time(), getIdTube(), deliveryItem.toString());
     	}
+    	
+    	if(nextState == RobotState.DELIVERING && !(specialHand == null)){
+            System.out.printf("T: %3d > %9s-> [%s]%n", Clock.Time(), getIdTube(), specialHand.toString());
+    	}
+    	
+    	
     }
     
     /*private void changeWrapState(RobotState nextState){
