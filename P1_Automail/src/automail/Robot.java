@@ -96,11 +96,13 @@ public class Robot {
                 break;
     		case DELIVERING:
     			if( (specialHand != null) && (!specialHand.getWrapped()) ) {
-    				changeWrapState(RobotState.WRAP_STAGE_1);
+    				changeState(RobotState.WRAP_STAGE_1);
+    				break;
     			}
     			if(current_floor == destination_floor){ // If already here drop off either way
     				if(specialHand != null) {
     					changeState(RobotState.DELIVER_FRAGILE);
+    					break;
     				}
                     /** Delivery complete, report this to the simulator! */
                     delivery.deliver(deliveryItem);
@@ -126,11 +128,13 @@ public class Robot {
     			}
                 break;
     		case WRAP_STAGE_1:
-    			changeWrapState(RobotState.WRAP_STAGE_2);
+    			changeState(RobotState.WRAP_STAGE_2);
+    			System.out.println("WRAP STAGE 1");
     			break;
     		case WRAP_STAGE_2:
     			wrapItem(specialHand);
-    			changeWrapState(RobotState.DELIVERING);
+    			changeState(RobotState.DELIVERING);
+    			System.out.println("WRAP STAGE 2");
     			break;
     		case DELIVER_FRAGILE:
     			assert(specialHand.isWrapped);
@@ -185,24 +189,16 @@ public class Robot {
      * @param nextState the state to which the robot is in transition
      */
     private void changeState(RobotState nextState){
-    	assert(!(deliveryItem == null && tube != null));
+    	//assert(!(deliveryItem == null && tube != null));
     	if (current_state != nextState) {
             System.out.printf("T: %3d > %7s changed from %s to %s%n", Clock.Time(), getIdTube(), current_state, nextState);
     	}
     	current_state = nextState;
-    	if(nextState == RobotState.DELIVERING){
+    	if(nextState == RobotState.DELIVERING && (specialHand == null)){
             System.out.printf("T: %3d > %9s-> [%s]%n", Clock.Time(), getIdTube(), deliveryItem.toString());
     	}
-    }
-    
-    private void changeWrapState(RobotState nextState){
-    	assert(!(deliveryItem == null && tube != null));
-    	if (current_state != nextState) {
-            System.out.printf("T: %3d > %7s changed from %s to %s%n", Clock.Time(), getIdTube(), current_state, nextState);
-    	}
-    	current_state = nextState;
-    	if(nextState == RobotState.DELIVERING){
-            System.out.printf("T: %3d > %9s-> [%s]%n", Clock.Time(), getIdSpecial(), deliveryItem.toString());
+    	if(nextState == RobotState.DELIVERING && !(specialHand == null)){
+            System.out.printf("T: %3d > %9s-> [%s]%n", Clock.Time(), getIdTube(), specialHand.toString());
     	}
     }
     
