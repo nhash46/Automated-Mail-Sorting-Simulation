@@ -18,7 +18,7 @@ public class Robot {
     private IMailDelivery delivery;
     protected final String id;
     /** Possible states the robot can be in */
-    public enum RobotState { DELIVERING, WAITING, RETURNING, WRAP_STAGE_1, WRAP_STAGE_2, DELIVER_FRAGILE }
+    public enum RobotState { DELIVERING, WAITING, RETURNING, WRAP_STAGE_1, WRAP_STAGE_2, DELIVER_FRAGILE, HOLD }
     public RobotState current_state;
     private int current_floor;
     private int destination_floor;
@@ -54,7 +54,6 @@ public class Robot {
         this.deliveryCounter = 0;
         this.CAUTION_ENABLED = Boolean.parseBoolean(automailProperties.getProperty("Caution"));
         this.FRAGILE_ENABLED = Boolean.parseBoolean(automailProperties.getProperty("Fragile"));
-        
     }
     
     public void dispatch() {
@@ -130,13 +129,11 @@ public class Robot {
                 break;
     		case WRAP_STAGE_1:
     			System.out.println("WRAPPING STAGE 1");
-    			//changeWrapState(RobotState.WRAP_STAGE_2);
     			changeState(RobotState.WRAP_STAGE_2);
     			break;
     		case WRAP_STAGE_2:
     			System.out.println("WRAPPING STAGE 2");
     			wrapItem(specialHand);
-    			//changeWrapState(RobotState.DELIVERING);
     			changeState(RobotState.DELIVERING);
     			break;
     		case DELIVER_FRAGILE:
@@ -151,7 +148,9 @@ public class Robot {
 				}
     			changeState(RobotState.RETURNING);
     			break;
+    		case HOLD:
     			
+    			break;
     	}
     }
 
@@ -184,48 +183,25 @@ public class Robot {
     	return String.format("%s(%1d)", id, (tube == null ? 0 : 1));
     }
     
-    private String getIdHand() {
-    	return String.format("%s(%1d)", id, (deliveryItem == null ? 0 : 1));
-    }
-    
-    private String getIdSpecial() {
-    	return String.format("%s(%1d)", id, (specialHand == null ? 0 : 1));
-    }
     
     /**
      * Prints out the change in state
      * @param nextState the state to which the robot is in transition
      */
     private void changeState(RobotState nextState){
-    	if(CAUTION_ENABLED && FRAGILE_ENABLED) {
-    		assert(specialHand != null);
-    	}
     	assert(!(deliveryItem == null && tube != null));
     	if (current_state != nextState) {
             System.out.printf("T: %3d > %7s changed from %s to %s%n", Clock.Time(), getIdTube(), current_state, nextState);
     	}
     	current_state = nextState;
-    	if(nextState == RobotState.DELIVERING && (specialHand == null)){
+    	if( (nextState == RobotState.DELIVERING) && (specialHand == null) ){
             System.out.printf("T: %3d > %9s-> [%s]%n", Clock.Time(), getIdTube(), deliveryItem.toString());
     	}
     	
-    	if(nextState == RobotState.DELIVERING && !(specialHand == null)){
+    	if( (nextState == RobotState.DELIVERING) && !(specialHand == null) ){
             System.out.printf("T: %3d > %9s-> [%s]%n", Clock.Time(), getIdTube(), specialHand.toString());
     	}
-    	
-    	
     }
-    
-    /*private void changeWrapState(RobotState nextState){
-    	assert(specialHand != null);
-    	if (current_state != nextState) {
-            System.out.printf("T: %3d > %7s changed from %s to %s%n", Clock.Time(), getIdHand(), current_state, nextState);
-    	}
-    	current_state = nextState;
-    	if(nextState == RobotState.DELIVERING){
-            System.out.printf("T: %3d > %9s-> [%s]%n", Clock.Time(), getIdSpecial(), specialHand.toString());
-    	}
-    }*/
     
 
 	public MailItem getTube() {
