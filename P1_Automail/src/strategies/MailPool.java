@@ -88,8 +88,7 @@ public class MailPool implements IMailPool {
 		}
 		else {
 			try {
-				while ( (pool.size() > 0) ) {
-					
+				while ( (pool.size() > 0) ) {				
 					Item current = j.next();
 					j.remove();
 					boolean added = false;
@@ -135,11 +134,11 @@ public class MailPool implements IMailPool {
 						pool.add(current);
 						System.out.println("ADDED BACK TO POOL");
 						break;
-					}
-					
+					}					
 				}
 				robot.dispatch(); // send the robot off if it has any items to deliver
-				i.remove();       // remove from mailPool queue 
+				i.remove();
+				System.out.println("ROBOT RMEMOVED");
 			}catch (Exception e) {
 	            throw e; 
         		}
