@@ -150,5 +150,13 @@ public class MailPool implements IMailPool {
 	public void registerWaiting(Robot robot) { // assumes won't be there already
 		robots.add(robot);
 	}
+	
+	/*
+	public boolean destFloorIsEmpty(int destFloor) {
+		for(Robot robot : robots) {
+			if(robot.)
+		}
+	}
+	*/
 
 }
