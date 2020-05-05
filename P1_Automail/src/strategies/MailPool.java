@@ -55,12 +55,14 @@ public class MailPool implements IMailPool {
 		try{
 			ListIterator<Robot> i = robots.listIterator();
 			while (i.hasNext()) {
+				System.out.println("NEXT EXISTS");
 				loadRobot(i);
 			}
 		} catch (Exception e) { 
             throw e;
         }
 	}
+	
 	
 	private void loadRobot(ListIterator<Robot> i) throws ItemTooHeavyException, BreakingFragileItemException {
 		Robot robot = i.next();
@@ -70,7 +72,7 @@ public class MailPool implements IMailPool {
 		boolean caution_mode = robot.isCautionMode();
 		boolean fragile_mode = robot.isFragileMode();
 		
-		if( (fragile_mode == false) ) {
+		if( fragile_mode == false ) {
 			if (pool.size() > 0) {
 				try {
 					robot.addToHand(j.next().mailItem); // hand first as we want higher priority delivered first
@@ -88,24 +90,24 @@ public class MailPool implements IMailPool {
 		}
 		else {
 			try {
-				while ( (pool.size() > 0) ) {
+				while ( pool.size() > 0 ) {
 					
 					Item current = j.next();
-					j.remove();
-					boolean added = false;
 					
 					if(current.mailItem.getFragile() == true) {
 						System.out.println("SPECIAL ITEM CAME IN HOT");
 						if(caution_mode == false) {
 							System.out.println(" -But rejected cause caution mode off");
 							robot.getDelivery().reject(current.mailItem);
+							j.remove();
 							continue;
 						}
 						else {
 							if(robot.specialEmpty() == true) {
 								robot.addToSpecialHand(current.mailItem);
+								j.remove();
 								System.out.println("ADDED TO SPECIAL HAND");
-								added = true;
+								continue;
 							}
 						}
 					}
@@ -113,36 +115,28 @@ public class MailPool implements IMailPool {
 					else {
 						if(robot.handEmpty() == true) {
 							robot.addToHand(current.mailItem);
-							
-							if(caution_mode == true) {
-								System.out.println("ADDED TO HAAAAAND");
-							}
-							
-							added = true;
+							j.remove();
+							System.out.println("ADDED TO HAAAAAND");
+							continue;
 						}
-						if( (robot.tubeEmpty() == true) && (added == false)) {
+						if( robot.tubeEmpty() == true ) {
 							robot.addToTube(current.mailItem);
-							
-							if(caution_mode == true) {
-								System.out.println("ADDED TO TUUUUUUBE");
-							}
-							
-							added = true;
+							j.remove();
+							System.out.println("ADDED TO TUUUUUUBE");
+							continue;
 						}
 					}
 					
-					if(added == false) {
-						pool.add(current);
-						System.out.println("ADDED BACK TO POOL");
-						break;
-					}
-					
+					System.out.println("UNABLE TO ADD ITEM, SENDING ROBOT OFF");
+					break;
 				}
-				robot.dispatch(); // send the robot off if it has any items to deliver
-				i.remove();       // remove from mailPool queue 
 			}catch (Exception e) {
 	            throw e; 
         		}
+			if(robot.isEmpty() == false) {
+				robot.dispatch(); // send the robot off if it has any items to deliver
+				i.remove();       // remove from mailPool queue 
+			}
 		}
 	}
 	
