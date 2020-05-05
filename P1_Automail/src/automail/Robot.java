@@ -18,7 +18,7 @@ public class Robot {
     private IMailDelivery delivery;
     protected final String id;
     /** Possible states the robot can be in */
-    public enum RobotState { DELIVERING, WAITING, RETURNING, WRAP_STAGE_1, WRAP_STAGE_2, DELIVER_FRAGILE }
+    public enum RobotState { DELIVERING, WAITING, RETURNING, WRAP_STAGE_1, WRAP_STAGE_2, DELIVER_FRAGILE, HOLD }
     public RobotState current_state;
     private int current_floor;
     private int destination_floor;
@@ -54,7 +54,6 @@ public class Robot {
         this.deliveryCounter = 0;
         this.CAUTION_ENABLED = Boolean.parseBoolean(automailProperties.getProperty("Caution"));
         this.FRAGILE_ENABLED = Boolean.parseBoolean(automailProperties.getProperty("Fragile"));
-        
     }
     
     public void dispatch() {
@@ -95,7 +94,9 @@ public class Robot {
                 }
                 break;
     		case DELIVERING:
-    			if( (specialHand != null) && (!specialHand.getWrapped()) ) {
+    			if( (specialHand != null) && (specialHand.getWrapped() == false) ) {
+    				//changeWrapState(RobotState.WRAP_STAGE_1);
+    				System.out.println("FIRST DELIVERING IF STATEMENT");
     				changeState(RobotState.WRAP_STAGE_1);
     				break;
     			}
@@ -128,13 +129,13 @@ public class Robot {
     			}
                 break;
     		case WRAP_STAGE_1:
+    			System.out.println("WRAPPING STAGE 1");
     			changeState(RobotState.WRAP_STAGE_2);
-    			System.out.println("WRAP STAGE 1");
     			break;
     		case WRAP_STAGE_2:
+    			System.out.println("WRAPPING STAGE 2");
     			wrapItem(specialHand);
     			changeState(RobotState.DELIVERING);
-    			System.out.println("WRAP STAGE 2");
     			break;
     		case DELIVER_FRAGILE:
     			assert(specialHand.isWrapped);
@@ -148,7 +149,9 @@ public class Robot {
 				}
     			changeState(RobotState.RETURNING);
     			break;
+    		case HOLD:
     			
+    			break;
     	}
     }
 
@@ -159,9 +162,10 @@ public class Robot {
         /** Set the destination floor */
     	if(specialHand != null){
     		destination_floor = specialHand.getDestFloor();
-    		return;
     	}
-        destination_floor = deliveryItem.getDestFloor();
+    	else{
+    		destination_floor = deliveryItem.getDestFloor();
+    	}
     }
 
     /**
@@ -180,9 +184,6 @@ public class Robot {
     	return String.format("%s(%1d)", id, (tube == null ? 0 : 1));
     }
     
-    private String getIdSpecial() {
-    	return String.format("%s(%1d)", id, (specialHand == null ? 0 : 1));
-    }
     
     /**
      * Prints out the change in state
@@ -194,10 +195,11 @@ public class Robot {
             System.out.printf("T: %3d > %7s changed from %s to %s%n", Clock.Time(), getIdTube(), current_state, nextState);
     	}
     	current_state = nextState;
-    	if(nextState == RobotState.DELIVERING && (specialHand == null)){
+    	if( (nextState == RobotState.DELIVERING) && (specialHand == null) ){
             System.out.printf("T: %3d > %9s-> [%s]%n", Clock.Time(), getIdTube(), deliveryItem.toString());
     	}
-    	if(nextState == RobotState.DELIVERING && !(specialHand == null)){
+    	
+    	if( (nextState == RobotState.DELIVERING) && !(specialHand == null) ){
             System.out.printf("T: %3d > %9s-> [%s]%n", Clock.Time(), getIdTube(), specialHand.toString());
     	}
     }
