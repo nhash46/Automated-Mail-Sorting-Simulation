@@ -4,6 +4,7 @@ import java.util.Properties;
 import exceptions.BreakingFragileItemException;
 import exceptions.ExcessiveDeliveryException;
 import exceptions.ItemTooHeavyException;
+import strategies.Automail;
 import strategies.IMailPool;
 import java.util.Map;
 import java.util.TreeMap;
@@ -20,8 +21,10 @@ public class Robot {
     /** Possible states the robot can be in */
     public enum RobotState { DELIVERING, WAITING, RETURNING, WRAP_STAGE_1, WRAP_STAGE_2, DELIVER_FRAGILE, HOLD }
     public RobotState current_state;
-    private int current_floor;
+    //private int current_floor;
+    int current_floor;
     private int destination_floor;
+    private int next_floor = 0;
     private IMailPool mailPool;
     private boolean receivedDispatch;
     
@@ -34,6 +37,8 @@ public class Robot {
     
     private int deliveryCounter;
     
+    private Automail automail;
+    
 
     /**
      * Initiates the robot's location at the start to be at the mailroom
@@ -42,7 +47,7 @@ public class Robot {
      * @param delivery governs the final delivery
      * @param mailPool is the source of mail items
      */
-    public Robot(IMailDelivery delivery, IMailPool mailPool, Properties automailProperties){
+    public Robot(IMailDelivery delivery, IMailPool mailPool, Properties automailProperties, Automail automail){
     	id = "R" + hashCode();
         // current_state = RobotState.WAITING;
     	current_state = RobotState.RETURNING;
@@ -54,6 +59,7 @@ public class Robot {
         this.deliveryCounter = 0;
         this.CAUTION_ENABLED = Boolean.parseBoolean(automailProperties.getProperty("Caution"));
         this.FRAGILE_ENABLED = Boolean.parseBoolean(automailProperties.getProperty("Fragile"));
+        this.automail = automail;
     }
     
     public void dispatch() {
@@ -101,6 +107,7 @@ public class Robot {
     			}
     			if(current_floor == destination_floor){ // If already here drop off either way
     				if(specialHand != null) {
+    					lockFloor();
     					changeState(RobotState.DELIVER_FRAGILE);
     					break;
     				}
@@ -124,6 +131,7 @@ public class Robot {
                     }
     			} else {
 	        		/** The robot is not at the destination yet, move towards it! */
+    				setNextFloor();
 	                moveTowards(destination_floor);
     			}
                 break;
@@ -144,9 +152,11 @@ public class Robot {
 				deliveryCounter++;
 				if(deliveryItem != null) {
 					setRoute();
+					unlockFloor();
 					changeState(RobotState.DELIVERING);
 				}
     			changeState(RobotState.RETURNING);
+    			unlockFloor();
     			break;
     		case HOLD:
     			
@@ -172,6 +182,7 @@ public class Robot {
      * @param destination the floor towards which the robot is moving
      */
     private void moveTowards(int destination) {
+    	
         if(current_floor < destination){
             current_floor++;
         } else {
@@ -280,8 +291,40 @@ public class Robot {
 	
 	public void unwrapItem(MailItem mailItem) {
 		assert((mailItem.isWrapped == true) && (mailItem.fragile));
-		System.out.println("UNWRAPPING ITEM");
+		System.out.println("FRAGILE ITEM UNWRAPPED AT T:" + Clock.Time());
 		mailItem.isWrapped = false;
 	}
 	
+	public void setNextFloor() {
+		if(next_floor == destination_floor) {
+		}
+		else {
+			if(current_floor < destination_floor){
+	            next_floor = current_floor + 1;
+	        } else {
+	            next_floor = current_floor - 1;
+	        }
+		}
+	}
+	
+	public void lockFloor() {
+		automail.lockedFloors.add(current_floor);
+		System.out.println("FLOOR " + current_floor + " WAS LOCKED by " + id + " for " + specialHand);
+	}
+	
+	public void unlockFloor() {
+		automail.lockedFloors.remove(new Integer(current_floor));
+		System.out.println("FLOOR " + current_floor + " WAS UNLOCKED by " + id);
+	}
+	
+	public boolean checkFloorLocked(int floor) {
+		if(automail.lockedFloors.contains(floor)) {
+			System.out.print("FLOOR " + floor + " IS LOCKED");
+			return true;
+		} else {
+			System.out.print("NOT LOCKED YOUR GOOD TO GO");
+			return false;
+		}
+	}
 }
+
