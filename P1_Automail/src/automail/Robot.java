@@ -35,8 +35,6 @@ public class Robot {
     
     private int deliveryCounter;
     
-    private boolean priority;
-    
 
     /**
      * Initiates the robot's location at the start to be at the mailroom
@@ -57,7 +55,6 @@ public class Robot {
         this.deliveryCounter = 0;
         this.CAUTION_ENABLED = Boolean.parseBoolean(automailProperties.getProperty("Caution"));
         this.FRAGILE_ENABLED = Boolean.parseBoolean(automailProperties.getProperty("Fragile"));
-        priority = false;
     }
     
     public void dispatch() {
@@ -137,7 +134,6 @@ public class Robot {
     			break;
     		case WRAP_STAGE_2:
     			wrapItem(specialHand);
-    			priority = true;
     			Automail.frag_floors[getRobotNumber()] = destination_floor;
     			changeState(RobotState.DELIVERING);
     			break;
@@ -147,7 +143,6 @@ public class Robot {
 				delivery.deliver(specialHand);
 				specialHand = null;
 				deliveryCounter++;
-				priority = false;
 				Automail.frag_floors[getRobotNumber()] = -1;
 				if(deliveryItem != null) {
 					setRoute();
@@ -221,9 +216,12 @@ public class Robot {
     			System.out.println("ROBOT "+ getRobotNumber()+ " GOING TO FLOOR "
     					+ getDestination() +" POSSIBLE COLLISION WITH ROBOT " + i + " GOING TO FLOOR " +
     					collision.getDestination());
-    			System.out.println(collision.getPosition());
-    			System.out.println(collision.getDestination());
-    			System.out.println(nextMove(collision.getDestination()));
+    			System.out.println("ROBOT "+collision.getRobotNumber()+" POSITION " + collision.getPosition());
+    			System.out.println("ROBOT "+collision.getRobotNumber()+" DESTINATION " + collision.getDestination());
+    			System.out.println("ROBOT "+collision.getRobotNumber()+" NEXT POSITION " + nextMove(collision.getDestination()));
+    			System.out.println("ROBOT "+getRobotNumber()+" POSITION " + getPosition());
+    			System.out.println("ROBOT "+getRobotNumber()+" DESTINATION " + getDestination());
+    			System.out.println("ROBOT "+getRobotNumber()+" NEXT POSITION " + nextMove(getDestination()));
     			if(nextMove(collision.getDestination()) == floor_num) {
     				if(getRobotNumber() < collision.getRobotNumber()) {
     					System.out.println("ROBOT " +getRobotNumber()+ " GETS PRIORITY");
