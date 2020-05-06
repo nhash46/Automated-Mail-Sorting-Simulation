@@ -19,7 +19,7 @@ public class Robot {
     private IMailDelivery delivery;
     protected final String id;
     /** Possible states the robot can be in */
-    public enum RobotState { DELIVERING, WAITING, RETURNING, WRAP_STAGE_1, WRAP_STAGE_2, DELIVER_FRAGILE, HOLD_POS }
+    public enum RobotState { DELIVERING, WAITING, RETURNING, WRAP_STAGE_1, WRAP_STAGE_2, DELIVER_FRAGILE, HOLD_POS,HOLD }
     public RobotState current_state;
     //private int current_floor;
     int current_floor;
@@ -70,7 +70,7 @@ public class Robot {
      * This is called on every time step
      * @throws ExcessiveDeliveryException if robot delivers more than the capacity of the tube without refilling
      */
-    public void step() throws ExcessiveDeliveryException {    	
+    public void step() throws ExcessiveDeliveryException {  
     	switch(current_state) {
     		/** This state is triggered when the robot is returning to the mailroom after a delivery */
     		case RETURNING:
@@ -141,9 +141,11 @@ public class Robot {
     				setNextFloor();
     				if(isFloorLocked(next_floor)) {
     					changeState(RobotState.HOLD);
+    					break; 
     				}
     				else {
     					moveTowards(destination_floor);
+    					break;
     				}
     			}
                 break;
@@ -335,7 +337,7 @@ public class Robot {
 	}
 	
 	public void lockFloor() {
-		automail.lockedFloors.add(current_floor);
+		automail.lockedFloors.add(destination_floor);
 		System.out.println("FLOOR " + current_floor + " WAS LOCKED by " + id + " for " + specialHand);
 	}
 	

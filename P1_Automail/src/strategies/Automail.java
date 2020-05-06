@@ -23,7 +23,7 @@ public class Automail {
     	/** Initialize robots */
     	num_robots = numRobots;
     	robots = new Robot[num_robots];
-    	for (int i = 0; i < numRobots; i++) robots[i] = new Robot(delivery, mailPool, automailProperties);
+    	for (int i = 0; i < numRobots; i++) robots[i] = new Robot(delivery, mailPool, automailProperties, this);
     }
     
 }
