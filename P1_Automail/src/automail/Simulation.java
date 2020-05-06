@@ -114,6 +114,7 @@ public class Simulation {
                 automail.mailPool.step();
 				for (int i=0; i<robots; i++) {
 					automail.robots[i].step();
+					System.out.println("T: " + Clock.Time() + " | " + automail.robots[i].id + " IS ON FLOOR " +automail.robots[i].current_floor);
 				}
 			} catch (ExcessiveDeliveryException|ItemTooHeavyException|BreakingFragileItemException e) {
 				e.printStackTrace();

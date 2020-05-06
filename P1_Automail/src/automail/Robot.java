@@ -21,8 +21,10 @@ public class Robot {
     /** Possible states the robot can be in */
     public enum RobotState { DELIVERING, WAITING, RETURNING, WRAP_STAGE_1, WRAP_STAGE_2, DELIVER_FRAGILE, HOLD_POS }
     public RobotState current_state;
-    private int current_floor;
+    //private int current_floor;
+    int current_floor;
     private int destination_floor;
+    private int next_floor = 0;
     private IMailPool mailPool;
     private boolean receivedDispatch;
     
@@ -35,7 +37,7 @@ public class Robot {
     
     private int deliveryCounter;
     
-    public Automail robot_info;
+    private Automail automail;
     
 
     /**
@@ -45,7 +47,7 @@ public class Robot {
      * @param delivery governs the final delivery
      * @param mailPool is the source of mail items
      */
-    public Robot(IMailDelivery delivery, IMailPool mailPool, Properties automailProperties){
+    public Robot(IMailDelivery delivery, IMailPool mailPool, Properties automailProperties, Automail automail){
     	id = "R" + hashCode();
         // current_state = RobotState.WAITING;
     	current_state = RobotState.RETURNING;
@@ -57,6 +59,7 @@ public class Robot {
         this.deliveryCounter = 0;
         this.CAUTION_ENABLED = Boolean.parseBoolean(automailProperties.getProperty("Caution"));
         this.FRAGILE_ENABLED = Boolean.parseBoolean(automailProperties.getProperty("Fragile"));
+        this.automail = automail;
     }
     
     public void dispatch() {
@@ -83,13 +86,18 @@ public class Robot {
                 	changeState(RobotState.WAITING);
                 } else {
                 	/** If the robot is not at the mailroom floor yet, then move towards it! */
-                    moveTowards(Building.MAILROOM_LOCATION);
+                	setNextFloor();
+                	if(isFloorLocked(next_floor)){
+                		changeState(RobotState.HOLD);
+                	}
+                	else {
+                		moveTowards(Building.MAILROOM_LOCATION);
+                	}
                 	break;
                 }
     		case WAITING:
                 /** If the StorageTube is ready and the Robot is waiting in the mailroom then start the delivery */
                 if(!isEmpty() && receivedDispatch){
-                	System.out.println("Caution enabled in Robot: " + CAUTION_ENABLED);
                 	receivedDispatch = false;
                 	deliveryCounter = 0; // reset delivery counter
         			setRoute();
@@ -105,6 +113,7 @@ public class Robot {
     			}
     			if(current_floor == destination_floor){ // If already here drop off either way
     				if(specialHand != null) {
+    					lockFloor();
     					changeState(RobotState.DELIVER_FRAGILE);
     					break;
     				}
@@ -117,6 +126,7 @@ public class Robot {
                     }
                     /** Check if want to return, i.e. if there is no item in the tube*/
                     if(tube == null){
+                    	setRoute();
                     	changeState(RobotState.RETURNING);
                     }
                     else{
@@ -128,7 +138,13 @@ public class Robot {
                     }
     			} else {
 	        		/** The robot is not at the destination yet, move towards it! */
-	                moveTowards(destination_floor);
+    				setNextFloor();
+    				if(isFloorLocked(next_floor)) {
+    					changeState(RobotState.HOLD);
+    				}
+    				else {
+    					moveTowards(destination_floor);
+    				}
     			}
                 break;
     		case WRAP_STAGE_1:
@@ -148,12 +164,18 @@ public class Robot {
 				deliveryCounter++;
 				if(deliveryItem != null) {
 					setRoute();
+					unlockFloor();
 					changeState(RobotState.DELIVERING);
 				}
     			changeState(RobotState.RETURNING);
+    			unlockFloor();
     			break;
-    		case HOLD_POS:
-    			changeState(RobotState.DELIVER_FRAGILE);
+    		case HOLD:
+    			if(!(isFloorLocked(next_floor))){
+    				changeState(RobotState.DELIVERING);
+    			} else {
+    				System.out.println("T: " + Clock.Time() + " | " + id + "IS HOLDING");
+    			}
     			break;
     	}
     }
@@ -163,11 +185,19 @@ public class Robot {
      */
     private void setRoute() {
         /** Set the destination floor */
+    	/*
+    	if(current_state == RobotState.RETURNING) {
+    		destination_floor = Building.MAILROOM_LOCATION;
+    	}
+    	*/
     	if(specialHand != null){
     		destination_floor = specialHand.getDestFloor();
     	}
-    	else{
+    	if(deliveryItem != null) {
     		destination_floor = deliveryItem.getDestFloor();
+    	}
+    	else {
+    		destination_floor = Building.MAILROOM_LOCATION;
     	}
     }
 
@@ -176,6 +206,7 @@ public class Robot {
      * @param destination the floor towards which the robot is moving
      */
     private void moveTowards(int destination) {
+    	
         if(current_floor < destination){
             current_floor++;
         } else {
@@ -286,8 +317,41 @@ public class Robot {
 	
 	public void unwrapItem(MailItem mailItem) {
 		assert((mailItem.isWrapped == true) && (mailItem.fragile));
-		System.out.println("UNWRAPPING ITEM");
+		System.out.println("FRAGILE ITEM UNWRAPPED AT T:" + Clock.Time());
 		mailItem.isWrapped = false;
 	}
 	
+	public void setNextFloor() {
+		if(next_floor == destination_floor) {
+			// System.out.println(id + " is about to reach it's destination floor");
+		}
+		else {
+			if(current_floor < destination_floor){
+	            next_floor = current_floor + 1;
+	        } else {
+	            next_floor = current_floor - 1;
+	        }
+		}
+	}
+	
+	public void lockFloor() {
+		automail.lockedFloors.add(current_floor);
+		System.out.println("FLOOR " + current_floor + " WAS LOCKED by " + id + " for " + specialHand);
+	}
+	
+	public void unlockFloor() {
+		automail.lockedFloors.remove(new Integer(current_floor));
+		System.out.println("FLOOR " + current_floor + " WAS UNLOCKED by " + id);
+	}
+	
+	public boolean isFloorLocked(int floor) {
+		if(automail.lockedFloors.contains(floor)) {
+			System.out.println("T: " + Clock.Time() + " | " + id + " requested access: FLOOR " + floor + " IS LOCKED");
+			return true;
+		} else {
+			System.out.println("T: " + Clock.Time() + " | " + id + " requested access: FLOOR " + floor + " IS NOT LOCKED, YOU'RE GOOD TO GO!");
+			return false;
+		}
+	}
 }
+

@@ -1,4 +1,6 @@
 package strategies;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 import automail.IMailDelivery;
@@ -9,6 +11,7 @@ public class Automail {
     public static Robot[] robots;
     public static int num_robots;
     public IMailPool mailPool;
+    public List<Integer> lockedFloors = new ArrayList<Integer>();
     
     public Automail(IMailPool mailPool, IMailDelivery delivery, int numRobots, Properties automailProperties) {
     	// Swap between simple provided strategies and your strategies here

@@ -55,7 +55,7 @@ public class MailPool implements IMailPool {
 		try{
 			ListIterator<Robot> i = robots.listIterator();
 			while (i.hasNext()) {
-				System.out.println("NEXT EXISTS");
+				//System.out.println("NEXT EXISTS");
 				loadRobot(i);
 			}
 		} catch (Exception e) { 
@@ -145,5 +145,13 @@ public class MailPool implements IMailPool {
 	public void registerWaiting(Robot robot) { // assumes won't be there already
 		robots.add(robot);
 	}
+	
+	/*
+	public boolean destFloorIsEmpty(int destFloor) {
+		for(Robot robot : robots) {
+			if(robot.)
+		}
+	}
+	*/
 
 }
