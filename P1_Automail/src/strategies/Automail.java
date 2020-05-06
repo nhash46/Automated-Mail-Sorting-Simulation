@@ -6,7 +6,9 @@ import automail.Robot;
 
 public class Automail {
 	      
-    public Robot[] robots;
+    public static Robot[] robots;
+    public static int num_robots;
+    public static int[] frag_floors; //Stores destination floor of robots with fragile items
     public IMailPool mailPool;
     
     public Automail(IMailPool mailPool, IMailDelivery delivery, int numRobots, Properties automailProperties) {
@@ -17,7 +19,13 @@ public class Automail {
     	this.mailPool = mailPool;
     	
     	/** Initialize robots */
-    	robots = new Robot[numRobots];
+    	num_robots = numRobots;
+    	robots = new Robot[num_robots];
+    	
+    	frag_floors = new int[num_robots];
+    	for(int i = 0; i < num_robots; i++) {
+    		frag_floors[i] = -1;
+    	}
     	for (int i = 0; i < numRobots; i++) robots[i] = new Robot(delivery, mailPool, automailProperties);
     }
     
