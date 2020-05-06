@@ -55,7 +55,6 @@ public class MailPool implements IMailPool {
 		try{
 			ListIterator<Robot> i = robots.listIterator();
 			while (i.hasNext()) {
-				System.out.println("NEXT EXISTS");
 				loadRobot(i);
 			}
 		} catch (Exception e) { 
@@ -95,8 +94,8 @@ public class MailPool implements IMailPool {
 					Item current = j.next();
 					
 					if(current.mailItem.getFragile() == true) {
-						System.out.println("SPECIAL ITEM CAME IN HOT");
 						if(caution_mode == false) {
+							System.out.println("SPECIAL ITEM CAME IN HOT");
 							System.out.println(" -But rejected cause caution mode off");
 							robot.getDelivery().reject(current.mailItem);
 							j.remove();
@@ -106,7 +105,6 @@ public class MailPool implements IMailPool {
 							if(robot.specialEmpty() == true) {
 								robot.addToSpecialHand(current.mailItem);
 								j.remove();
-								System.out.println("ADDED TO SPECIAL HAND");
 								continue;
 							}
 						}
@@ -116,19 +114,16 @@ public class MailPool implements IMailPool {
 						if(robot.handEmpty() == true) {
 							robot.addToHand(current.mailItem);
 							j.remove();
-							System.out.println("ADDED TO HAAAAAND");
 							continue;
 						}
 						if( robot.tubeEmpty() == true ) {
 							robot.addToTube(current.mailItem);
 							j.remove();
-							System.out.println("ADDED TO TUUUUUUBE");
 							continue;
 						}
 					}
 					
-					System.out.println("UNABLE TO ADD ITEM, SENDING ROBOT OFF");
-					break;
+					break; // Unable to add any item, sending robot off
 				}
 			}catch (Exception e) {
 	            throw e; 

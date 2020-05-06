@@ -35,7 +35,7 @@ public class Robot {
     
     private int deliveryCounter;
     
-    public Automail robot_info;
+    private boolean priority;
     
 
     /**
@@ -57,6 +57,7 @@ public class Robot {
         this.deliveryCounter = 0;
         this.CAUTION_ENABLED = Boolean.parseBoolean(automailProperties.getProperty("Caution"));
         this.FRAGILE_ENABLED = Boolean.parseBoolean(automailProperties.getProperty("Fragile"));
+        priority = false;
     }
     
     public void dispatch() {
@@ -132,12 +133,12 @@ public class Robot {
     			}
                 break;
     		case WRAP_STAGE_1:
-    			System.out.println("WRAPPING STAGE 1");
     			changeState(RobotState.WRAP_STAGE_2);
     			break;
     		case WRAP_STAGE_2:
-    			System.out.println("WRAPPING STAGE 2");
     			wrapItem(specialHand);
+    			priority = true;
+    			Automail.frag_floors[getRobotNumber()] = destination_floor;
     			changeState(RobotState.DELIVERING);
     			break;
     		case DELIVER_FRAGILE:
@@ -146,6 +147,8 @@ public class Robot {
 				delivery.deliver(specialHand);
 				specialHand = null;
 				deliveryCounter++;
+				priority = false;
+				Automail.frag_floors[getRobotNumber()] = -1;
 				if(deliveryItem != null) {
 					setRoute();
 					changeState(RobotState.DELIVERING);
@@ -175,13 +178,82 @@ public class Robot {
      * Generic function that moves the robot towards the destination
      * @param destination the floor towards which the robot is moving
      */
-    private void moveTowards(int destination) {
+    /*private void moveTowards(int destination) {
         if(current_floor < destination){
             current_floor++;
         } else {
             current_floor--;
         }
+    }*/
+    
+    private void moveTowards(int destination) {
+    	/*for(int i = 0; i<Automail.num_robots; i++) {
+    		System.out.println(Automail.frag_floors[i]);
+    	}
+    	System.out.println(priority);*/
+        if(current_floor < destination){
+        	current_floor++;
+        	if(fragileCollision(current_floor)) {
+        		current_floor--;
+        		System.out.println("Collision immenent, need to wait");
+        		return;
+        	}
+        }
+        else {
+        	current_floor--;
+        	if(fragileCollision(current_floor)) {
+        		current_floor++;
+        		System.out.println("Collision immenent, need to wait");
+        		return;
+        	}
+        }
     }
+    
+    /**
+     * Checks if inputed floor is an/will be floor that has a robot with a fragile item
+     * @param floor we are checking
+     * @return true if floor is a fragile floor
+     */
+    private boolean fragileCollision(int floor_num) {
+    	for(int i = 0; i < Automail.num_robots; i++) {
+    		if( (Automail.frag_floors[i] == floor_num) && (getRobotNumber() != i) ) {
+    			Robot collision = Automail.robots[i];
+    			System.out.println("ROBOT "+ getRobotNumber()+ " GOING TO FLOOR "
+    					+ getDestination() +" POSSIBLE COLLISION WITH ROBOT " + i + " GOING TO FLOOR " +
+    					collision.getDestination());
+    			System.out.println(collision.getPosition());
+    			System.out.println(collision.getDestination());
+    			System.out.println(nextMove(collision.getDestination()));
+    			if(nextMove(collision.getDestination()) == floor_num) {
+    				if(getRobotNumber() < collision.getRobotNumber()) {
+    					System.out.println("ROBOT " +getRobotNumber()+ " GETS PRIORITY");
+    					continue;
+    				}
+    				
+    				return true;
+    			}
+    		}
+    	}
+    	return false;
+    }
+    
+    /**
+     * Predicts next move of a robot with no restrictions
+     * @param destination of a robot
+     * @return would be next move of a robot
+     */
+    public int nextMove(int destination) {
+    	if(current_floor < destination){
+            return current_floor + 1;
+        }
+    	else if(current_floor > destination) {
+        	return current_floor - 1;
+        }
+    	else {
+    		return current_floor;
+    	}
+    }
+    
     
 
     
@@ -209,10 +281,6 @@ public class Robot {
     	}
     }
     
-
-	public MailItem getTube() {
-		return tube;
-	}
     
 	static private int count = 0;
 	static private Map<Integer, Integer> hashMap = new TreeMap<Integer, Integer>();
@@ -223,6 +291,21 @@ public class Robot {
 		Integer hash = hashMap.get(hash0);
 		if (hash == null) { hash = count++; hashMap.put(hash0, hash); }
 		return hash;
+	}
+	
+	public int getRobotNumber() {
+		return Integer.parseInt(id.substring(id.length() - 1));
+	}
+	
+	public int getDestination() {
+		return destination_floor;
+	}
+	
+	/**
+	 * @return current floor of robot
+	 */
+	public int getPosition() {
+		return destination_floor;
 	}
 	
 	public boolean isCautionMode() {
