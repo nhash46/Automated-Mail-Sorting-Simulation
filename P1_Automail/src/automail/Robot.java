@@ -4,6 +4,7 @@ import java.util.Properties;
 import exceptions.BreakingFragileItemException;
 import exceptions.ExcessiveDeliveryException;
 import exceptions.ItemTooHeavyException;
+import strategies.Automail;
 import strategies.IMailPool;
 import java.util.Map;
 import java.util.TreeMap;
@@ -18,7 +19,7 @@ public class Robot {
     private IMailDelivery delivery;
     protected final String id;
     /** Possible states the robot can be in */
-    public enum RobotState { DELIVERING, WAITING, RETURNING, WRAP_STAGE_1, WRAP_STAGE_2, DELIVER_FRAGILE, HOLD }
+    public enum RobotState { DELIVERING, WAITING, RETURNING, WRAP_STAGE_1, WRAP_STAGE_2, DELIVER_FRAGILE, HOLD_POS }
     public RobotState current_state;
     private int current_floor;
     private int destination_floor;
@@ -33,6 +34,8 @@ public class Robot {
     private MailItem specialHand = null;
     
     private int deliveryCounter;
+    
+    public Automail robot_info;
     
 
     /**
@@ -149,8 +152,8 @@ public class Robot {
 				}
     			changeState(RobotState.RETURNING);
     			break;
-    		case HOLD:
-    			
+    		case HOLD_POS:
+    			changeState(RobotState.DELIVER_FRAGILE);
     			break;
     	}
     }
@@ -179,6 +182,8 @@ public class Robot {
             current_floor--;
         }
     }
+    
+
     
     private String getIdTube() {
     	return String.format("%s(%1d)", id, (tube == null ? 0 : 1));
