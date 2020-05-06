@@ -55,7 +55,7 @@ public class MailPool implements IMailPool {
 		try{
 			ListIterator<Robot> i = robots.listIterator();
 			while (i.hasNext()) {
-				System.out.println("NEXT EXISTS");
+				//System.out.println("NEXT EXISTS");
 				loadRobot(i);
 			}
 		} catch (Exception e) { 

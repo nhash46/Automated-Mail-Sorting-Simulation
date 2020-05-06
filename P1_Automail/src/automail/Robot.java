@@ -86,7 +86,13 @@ public class Robot {
                 	changeState(RobotState.WAITING);
                 } else {
                 	/** If the robot is not at the mailroom floor yet, then move towards it! */
-                    moveTowards(Building.MAILROOM_LOCATION);
+                	setNextFloor();
+                	if(isFloorLocked(next_floor)){
+                		changeState(RobotState.HOLD);
+                	}
+                	else {
+                		moveTowards(Building.MAILROOM_LOCATION);
+                	}
                 	break;
                 }
     		case WAITING:
@@ -120,6 +126,7 @@ public class Robot {
                     }
                     /** Check if want to return, i.e. if there is no item in the tube*/
                     if(tube == null){
+                    	setRoute();
                     	changeState(RobotState.RETURNING);
                     }
                     else{
@@ -132,7 +139,12 @@ public class Robot {
     			} else {
 	        		/** The robot is not at the destination yet, move towards it! */
     				setNextFloor();
-	                moveTowards(destination_floor);
+    				if(isFloorLocked(next_floor)) {
+    					changeState(RobotState.HOLD);
+    				}
+    				else {
+    					moveTowards(destination_floor);
+    				}
     			}
                 break;
     		case WRAP_STAGE_1:
@@ -159,7 +171,11 @@ public class Robot {
     			unlockFloor();
     			break;
     		case HOLD:
-    			
+    			if(!(isFloorLocked(next_floor))){
+    				changeState(RobotState.DELIVERING);
+    			} else {
+    				System.out.println("T: " + Clock.Time() + " | " + id + "IS HOLDING");
+    			}
     			break;
     	}
     }
@@ -169,11 +185,19 @@ public class Robot {
      */
     private void setRoute() {
         /** Set the destination floor */
+    	/*
+    	if(current_state == RobotState.RETURNING) {
+    		destination_floor = Building.MAILROOM_LOCATION;
+    	}
+    	*/
     	if(specialHand != null){
     		destination_floor = specialHand.getDestFloor();
     	}
-    	else{
+    	if(deliveryItem != null) {
     		destination_floor = deliveryItem.getDestFloor();
+    	}
+    	else {
+    		destination_floor = Building.MAILROOM_LOCATION;
     	}
     }
 
@@ -297,6 +321,7 @@ public class Robot {
 	
 	public void setNextFloor() {
 		if(next_floor == destination_floor) {
+			// System.out.println(id + " is about to reach it's destination floor");
 		}
 		else {
 			if(current_floor < destination_floor){
@@ -317,12 +342,12 @@ public class Robot {
 		System.out.println("FLOOR " + current_floor + " WAS UNLOCKED by " + id);
 	}
 	
-	public boolean checkFloorLocked(int floor) {
+	public boolean isFloorLocked(int floor) {
 		if(automail.lockedFloors.contains(floor)) {
-			System.out.print("FLOOR " + floor + " IS LOCKED");
+			System.out.println("T: " + Clock.Time() + " | " + id + " requested access: FLOOR " + floor + " IS LOCKED");
 			return true;
 		} else {
-			System.out.print("NOT LOCKED YOUR GOOD TO GO");
+			System.out.println("T: " + Clock.Time() + " | " + id + " requested access: FLOOR " + floor + " IS NOT LOCKED, YOU'RE GOOD TO GO!");
 			return false;
 		}
 	}
