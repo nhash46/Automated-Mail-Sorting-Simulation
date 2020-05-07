@@ -170,19 +170,13 @@ public class Robot {
     		destination_floor = deliveryItem.getDestFloor();
     	}
     }
-
+    
+    
     /**
-     * Generic function that moves the robot towards the destination
+     * Generic function that moves the robot towards the destination, checks
+     * if robot should move or wait depending on surrounding robots
      * @param destination the floor towards which the robot is moving
      */
-    /*private void moveTowards(int destination) {
-        if(current_floor < destination){
-            current_floor++;
-        } else {
-            current_floor--;
-        }
-    }*/
-    
     private void moveTowards(int destination) {
     	int next_floor;
     	next_floor = current_floor;
