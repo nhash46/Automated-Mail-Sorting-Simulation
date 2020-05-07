@@ -19,7 +19,7 @@ public class Robot {
     private IMailDelivery delivery;
     protected final String id;
     /** Possible states the robot can be in */
-    public enum RobotState { DELIVERING, WAITING, RETURNING, WRAP_STAGE_1, WRAP_STAGE_2, DELIVER_FRAGILE, HOLD_POS }
+    public enum RobotState { DELIVERING, WAITING, RETURNING, WRAP_STAGE_1, WRAP_STAGE_2, DELIVER_FRAGILE }
     public RobotState current_state;
     private int current_floor;
     private int destination_floor;
@@ -34,6 +34,8 @@ public class Robot {
     private MailItem specialHand = null;
     
     private int deliveryCounter;
+    
+    private boolean priority;
     
 
     /**
@@ -55,6 +57,7 @@ public class Robot {
         this.deliveryCounter = 0;
         this.CAUTION_ENABLED = Boolean.parseBoolean(automailProperties.getProperty("Caution"));
         this.FRAGILE_ENABLED = Boolean.parseBoolean(automailProperties.getProperty("Fragile"));
+        this.priority = false;
     }
     
     public void dispatch() {
@@ -135,6 +138,7 @@ public class Robot {
     		case WRAP_STAGE_2:
     			wrapItem(specialHand);
     			Automail.frag_floors[getRobotNumber()] = destination_floor;
+    			priority = true;
     			changeState(RobotState.DELIVERING);
     			break;
     		case DELIVER_FRAGILE:
@@ -144,14 +148,12 @@ public class Robot {
 				specialHand = null;
 				deliveryCounter++;
 				Automail.frag_floors[getRobotNumber()] = -1;
+				priority = false;
 				if(deliveryItem != null) {
 					setRoute();
 					changeState(RobotState.DELIVERING);
 				}
     			changeState(RobotState.RETURNING);
-    			break;
-    		case HOLD_POS:
-    			changeState(RobotState.DELIVER_FRAGILE);
     			break;
     	}
     }
@@ -182,52 +184,86 @@ public class Robot {
     }*/
     
     private void moveTowards(int destination) {
-    	/*for(int i = 0; i<Automail.num_robots; i++) {
-    		System.out.println(Automail.frag_floors[i]);
-    	}
-    	System.out.println(priority);*/
-        if(current_floor < destination){
-        	current_floor++;
-        	if(fragileCollision(current_floor)) {
-        		current_floor--;
-        		System.out.println("Collision immenent, need to wait");
-        		return;
+    	int next_floor;
+    	next_floor = current_floor;
+
+        if(next_floor < destination){
+        	next_floor++;
+        	if(fragileOccupied(next_floor) == false) {
+        		if(fragileCollision(next_floor) == false) {
+        			current_floor = next_floor;
+        		}
         	}
         }
         else {
-        	current_floor--;
-        	if(fragileCollision(current_floor)) {
-        		current_floor++;
-        		System.out.println("Collision immenent, need to wait");
-        		return;
+        	next_floor--;
+        	if(fragileOccupied(next_floor) == false) {
+        		if(fragileCollision(next_floor) == false) {
+        			current_floor = next_floor;
+        		}
         	}
         }
     }
     
     /**
-     * Checks if inputed floor is an/will be floor that has a robot with a fragile item
-     * @param floor we are checking
-     * @return true if floor is a fragile floor
+     * Checks if inputed floor is a robot with a fragile item's delivery floor and will meet at the same time
+     * @param floor_num, the floor robot calling function will move to next step
+     * @return 	true: if floor is a fragile floor and robot delivering a fragile item will
+     * 			move to the floor/is already on its destination floor at the same time as 
+     * 			robot calling the function, or if robot calling the function is not given
+     * 			priority
      */
     private boolean fragileCollision(int floor_num) {
     	for(int i = 0; i < Automail.num_robots; i++) {
     		if( (Automail.frag_floors[i] == floor_num) && (getRobotNumber() != i) ) {
     			Robot collision = Automail.robots[i];
-    			System.out.println("ROBOT "+ getRobotNumber()+ " GOING TO FLOOR "
-    					+ getDestination() +" POSSIBLE COLLISION WITH ROBOT " + i + " GOING TO FLOOR " +
-    					collision.getDestination());
-    			System.out.println("ROBOT "+collision.getRobotNumber()+" POSITION " + collision.getPosition());
-    			System.out.println("ROBOT "+collision.getRobotNumber()+" DESTINATION " + collision.getDestination());
-    			System.out.println("ROBOT "+collision.getRobotNumber()+" NEXT POSITION " + nextMove(collision.getDestination()));
-    			System.out.println("ROBOT "+getRobotNumber()+" POSITION " + getPosition());
-    			System.out.println("ROBOT "+getRobotNumber()+" DESTINATION " + getDestination());
-    			System.out.println("ROBOT "+getRobotNumber()+" NEXT POSITION " + nextMove(getDestination()));
-    			if(nextMove(collision.getDestination()) == floor_num) {
+    			//System.out.println("ROBOT "+ getRobotNumber()+ " GOING TO FLOOR "
+    					//+ getDestination() +" POSSIBLE COLLISION WITH ROBOT " + i + " GOING TO FLOOR " +
+    					//collision.getDestination());
+    			//System.out.println("ROBOT "+collision.getRobotNumber()+" POSITION " + collision.getPosition());
+    			//System.out.println("ROBOT "+collision.getRobotNumber()+" DESTINATION " + collision.getDestination());
+    			//System.out.println("ROBOT "+collision.getRobotNumber()+" NEXT POSITION " + collision.nextMove(collision.getDestination()));
+    			//System.out.println("ROBOT "+getRobotNumber()+" POSITION " + getPosition());
+    			//System.out.println("ROBOT "+getRobotNumber()+" DESTINATION " + getDestination());
+    			//System.out.println("ROBOT "+getRobotNumber()+" NEXT POSITION " + nextMove(getDestination()));
+    			if(collision.nextMove(collision.getDestination()) == floor_num) {
+    				if( (collision.hasFloorPriority(floor_num) == true) && (hasFloorPriority(floor_num) == false) ){
+    					//System.out.println("ROBOT " +getRobotNumber()+ " DOES NOT GET PRIORITY");
+    					return true;
+    				}
     				if(getRobotNumber() < collision.getRobotNumber()) {
-    					System.out.println("ROBOT " +getRobotNumber()+ " GETS PRIORITY");
+    					//System.out.println("ROBOT " +getRobotNumber()+ " GETS PRIORITY");
     					continue;
     				}
-    				
+    		    	//System.out.println("ROBOT " +getRobotNumber()+ " DOES NOT GET PRIORITY");
+    				return true;
+    			}
+    		}
+    	}
+    	//System.out.println("ROBOT " +getRobotNumber()+ " CAN MOVE");
+    	return false;
+    }
+    
+    
+    /**
+     * Checks if a fragile floor is occupied by a robot delivering a fragile item or if calling robot 
+     * is delivering a fragile item to floor and other robots are currently there
+     * @param floor_num, the floor robot calling function will move to next step
+     * @return 	true if robot delivering a fragile item is on the floor or if 
+     * 			robot calling function is delivering a fragile item to floor_num
+     * 			and floor is already occupied
+     */
+    private boolean fragileOccupied(int floor_num) {
+    	for(int i = 0; i < Automail.num_robots; i++) {
+    		Robot collision = Automail.robots[i];
+    		
+    		if(collision.getPosition() == floor_num) {
+    			if(	(collision.getDestination() == floor_num) && 
+    				(collision.hasFloorPriority(floor_num) == true) ) {
+    				return true;
+    			}
+    			if(	(getDestination() == floor_num) && 
+    				(hasFloorPriority(floor_num) == true) ) {
     				return true;
     			}
     		}
@@ -235,20 +271,23 @@ public class Robot {
     	return false;
     }
     
+    
     /**
      * Predicts next move of a robot with no restrictions
      * @param destination of a robot
      * @return would be next move of a robot
      */
     public int nextMove(int destination) {
+    	int next_floor;
+    	next_floor = current_floor;
     	if(current_floor < destination){
-            return current_floor + 1;
+            return next_floor + 1;
         }
     	else if(current_floor > destination) {
-        	return current_floor - 1;
+        	return next_floor - 1;
         }
     	else {
-    		return current_floor;
+    		return next_floor;
     	}
     }
     
@@ -303,7 +342,7 @@ public class Robot {
 	 * @return current floor of robot
 	 */
 	public int getPosition() {
-		return destination_floor;
+		return current_floor;
 	}
 	
 	public boolean isCautionMode() {
@@ -320,6 +359,15 @@ public class Robot {
 
 	public boolean isEmpty() {
 		return (handEmpty() == true && tubeEmpty() == true && specialEmpty() == true);
+	}
+	
+	public boolean hasFloorPriority(int floor_num) {
+		if(priority == true) {
+			if(getDestination() == floor_num) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	public boolean spaceLeft() {
