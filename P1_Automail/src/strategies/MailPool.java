@@ -71,7 +71,8 @@ public class MailPool implements IMailPool {
 		boolean caution_mode = robot.isCautionMode();
 		boolean fragile_mode = robot.isFragileMode();
 		
-		if( fragile_mode == false ) {
+		//Uncomment "|| ((caution_mode == false) && (fragile_mode == true))" for original behaviour when caution is false and fragile is true
+		if( (fragile_mode == false) /*|| ((caution_mode == false) && (fragile_mode == true))*/ ) {
 			if (pool.size() > 0) {
 				try {
 					robot.addToHand(j.next().mailItem); // hand first as we want higher priority delivered first

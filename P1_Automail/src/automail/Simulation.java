@@ -29,6 +29,13 @@ public class Simulation {
     private static ArrayList<MailItem> MAIL_DELIVERED;
     private static ArrayList<MailItem> MAIL_REJECTED;
     private static double total_score = 0;
+    
+    public static int delivered_normal;
+    public static int delivered_caution;
+    public static int total_weight_normal;
+    public static int total_weight_caution;
+    public static int total_wrapping_time;
+    public static int total_unwrapping_time;
 
     public static void main(String[] args) throws IOException, InstantiationException, IllegalAccessException, ClassNotFoundException {
     	Properties automailProperties = new Properties();
@@ -41,6 +48,13 @@ public class Simulation {
     	automailProperties.setProperty("Caution", "false");
     	automailProperties.setProperty("Fragile", "false");
     	automailProperties.setProperty("Statistics", "false");
+    	
+    	delivered_normal = 0;
+        delivered_caution = 0;
+        total_weight_normal = 0;
+        total_weight_caution = 0;
+        total_wrapping_time = 0;
+        total_unwrapping_time = 0;
 
     	// Read properties
 		FileReader inStream = null;
@@ -172,5 +186,11 @@ public class Simulation {
         System.out.println("T: "+Clock.Time()+" | Simulation complete!");
         System.out.println("Final Delivery time: "+Clock.Time());
         System.out.printf("Final Score: %.2f%n", total_score);
+        System.out.println("Packages delivered normally: "+delivered_normal);
+        System.out.println("Packages delivered using caution: "+delivered_caution);
+        System.out.println("Total weight of packages delivered normally: "+total_weight_normal);
+        System.out.println("Total weight of packages delivered using caution: "+total_weight_caution);
+        System.out.println("Total time spent wrapping: "+total_wrapping_time);
+        System.out.println("Total time spent unwrapping "+total_unwrapping_time);
     }
 }

@@ -110,6 +110,8 @@ public class Robot {
     				}
                     /** Delivery complete, report this to the simulator! */
                     delivery.deliver(deliveryItem);
+                    Simulation.delivered_normal += 1;
+                    Simulation.total_weight_normal += deliveryItem.getWeight();
                     deliveryItem = null;
                     deliveryCounter++;
                     if(deliveryCounter > 3){  // Implies a simulation bug
@@ -133,17 +135,22 @@ public class Robot {
                 break;
     		case WRAP_STAGE_1:
     			changeState(RobotState.WRAP_STAGE_2);
+    			Simulation.total_wrapping_time += 1;
     			break;
     		case WRAP_STAGE_2:
     			wrapItem(specialHand);
     			Automail.frag_floors[getRobotNumber()] = destination_floor;
+    			Simulation.total_wrapping_time += 1;
     			priority = true;
     			changeState(RobotState.DELIVERING);
     			break;
     		case DELIVER_FRAGILE:
     			assert(specialHand.isWrapped);
     			unwrapItem(specialHand);
+    			Simulation.total_unwrapping_time += 1;
 				delivery.deliver(specialHand);
+				Simulation.delivered_caution += 1;
+				Simulation.total_weight_caution += specialHand.getWeight();
 				specialHand = null;
 				deliveryCounter++;
 				Automail.frag_floors[getRobotNumber()] = -1;
@@ -169,19 +176,13 @@ public class Robot {
     		destination_floor = deliveryItem.getDestFloor();
     	}
     }
-
+    
+    
     /**
-     * Generic function that moves the robot towards the destination
+     * Generic function that moves the robot towards the destination, checks
+     * if robot should move or wait depending on surrounding robots
      * @param destination the floor towards which the robot is moving
      */
-    /*private void moveTowards(int destination) {
-        if(current_floor < destination){
-            current_floor++;
-        } else {
-            current_floor--;
-        }
-    }*/
-    
     private void moveTowards(int destination) {
     	int next_floor;
     	next_floor = current_floor;
