@@ -187,19 +187,12 @@ public class Robot {
     private void moveTowards(int destination) {
     	int next_floor;
     	next_floor = current_floor;
-    	
-    	System.out.println("ROBOT: " +getRobotNumber()+ " PRIORITY: "+priority);
-    	
-    	
-    	boolean moved = false;
 
         if(next_floor < destination){
         	next_floor++;
         	if(fragileOccupied(next_floor) == false) {
         		if(fragileCollision(next_floor) == false) {
         			current_floor = next_floor;
-        			moved = true;
-        			System.out.println("ROBOT MOVED UP");
         		}
         	}
         }
@@ -208,14 +201,8 @@ public class Robot {
         	if(fragileOccupied(next_floor) == false) {
         		if(fragileCollision(next_floor) == false) {
         			current_floor = next_floor;
-        			moved = true;
-        			System.out.println("ROBOT MOVED DOWN");
         		}
         	}
-        }
-        
-        if(moved == false) {
-        	System.out.println("ROBOT WAITED");
         }
     }
     
