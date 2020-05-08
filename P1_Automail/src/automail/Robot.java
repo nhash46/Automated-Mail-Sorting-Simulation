@@ -9,6 +9,8 @@ import strategies.IMailPool;
 import java.util.Map;
 import java.util.TreeMap;
 
+import automail.Simulation.StatTracker;
+
 /**
  * The robot delivers mail!
  */
@@ -89,7 +91,6 @@ public class Robot {
     		case WAITING:
                 /** If the StorageTube is ready and the Robot is waiting in the mailroom then start the delivery */
                 if(!isEmpty() && receivedDispatch){
-                	System.out.println("Caution enabled in Robot: " + CAUTION_ENABLED);
                 	receivedDispatch = false;
                 	deliveryCounter = 0; // reset delivery counter
         			setRoute();
@@ -98,8 +99,6 @@ public class Robot {
                 break;
     		case DELIVERING:
     			if( (specialHand != null) && (specialHand.getWrapped() == false) ) {
-    				//changeWrapState(RobotState.WRAP_STAGE_1);
-    				System.out.println("FIRST DELIVERING IF STATEMENT");
     				changeState(RobotState.WRAP_STAGE_1);
     				break;
     			}
@@ -110,8 +109,8 @@ public class Robot {
     				}
                     /** Delivery complete, report this to the simulator! */
                     delivery.deliver(deliveryItem);
-                    Simulation.delivered_normal += 1;
-                    Simulation.total_weight_normal += deliveryItem.getWeight();
+                    Simulation.StatTracker.delivered_normal += 1;
+                    Simulation.StatTracker.total_weight_normal += deliveryItem.getWeight();
                     deliveryItem = null;
                     deliveryCounter++;
                     if(deliveryCounter > 3){  // Implies a simulation bug
@@ -135,22 +134,22 @@ public class Robot {
                 break;
     		case WRAP_STAGE_1:
     			changeState(RobotState.WRAP_STAGE_2);
-    			Simulation.total_wrapping_time += 1;
+    			Simulation.StatTracker.total_wrapping_time += 1;
     			break;
     		case WRAP_STAGE_2:
     			wrapItem(specialHand);
     			Automail.frag_floors[getRobotNumber()] = destination_floor;
-    			Simulation.total_wrapping_time += 1;
+    			Simulation.StatTracker.total_wrapping_time += 1;
     			priority = true;
     			changeState(RobotState.DELIVERING);
     			break;
     		case DELIVER_FRAGILE:
     			assert(specialHand.isWrapped);
     			unwrapItem(specialHand);
-    			Simulation.total_unwrapping_time += 1;
+    			Simulation.StatTracker.total_unwrapping_time += 1;
 				delivery.deliver(specialHand);
-				Simulation.delivered_caution += 1;
-				Simulation.total_weight_caution += specialHand.getWeight();
+				Simulation.StatTracker.delivered_caution += 1;
+				Simulation.StatTracker.total_weight_caution += specialHand.getWeight();
 				specialHand = null;
 				deliveryCounter++;
 				Automail.frag_floors[getRobotNumber()] = -1;
@@ -217,30 +216,18 @@ public class Robot {
     	for(int i = 0; i < Automail.num_robots; i++) {
     		if( (Automail.frag_floors[i] == floor_num) && (getRobotNumber() != i) ) {
     			Robot collision = Automail.robots[i];
-    			//System.out.println("ROBOT "+ getRobotNumber()+ " GOING TO FLOOR "
-    					//+ getDestination() +" POSSIBLE COLLISION WITH ROBOT " + i + " GOING TO FLOOR " +
-    					//collision.getDestination());
-    			//System.out.println("ROBOT "+collision.getRobotNumber()+" POSITION " + collision.getPosition());
-    			//System.out.println("ROBOT "+collision.getRobotNumber()+" DESTINATION " + collision.getDestination());
-    			//System.out.println("ROBOT "+collision.getRobotNumber()+" NEXT POSITION " + collision.nextMove(collision.getDestination()));
-    			//System.out.println("ROBOT "+getRobotNumber()+" POSITION " + getPosition());
-    			//System.out.println("ROBOT "+getRobotNumber()+" DESTINATION " + getDestination());
-    			//System.out.println("ROBOT "+getRobotNumber()+" NEXT POSITION " + nextMove(getDestination()));
     			if(collision.nextMove(collision.getDestination()) == floor_num) {
-    				if( (collision.hasFloorPriority(floor_num) == true) && (hasFloorPriority(floor_num) == false) ){
-    					//System.out.println("ROBOT " +getRobotNumber()+ " DOES NOT GET PRIORITY");
+    				/*if( (collision.hasFloorPriority(floor_num) == true) && (hasFloorPriority(floor_num) == false) ){
+    					//System.out.println("FRAGILE COLLISION TRUE");
     					return true;
-    				}
+    				}*/
     				if(getRobotNumber() < collision.getRobotNumber()) {
-    					//System.out.println("ROBOT " +getRobotNumber()+ " GETS PRIORITY");
     					continue;
     				}
-    		    	//System.out.println("ROBOT " +getRobotNumber()+ " DOES NOT GET PRIORITY");
     				return true;
     			}
     		}
     	}
-    	//System.out.println("ROBOT " +getRobotNumber()+ " CAN MOVE");
     	return false;
     }
     
@@ -278,16 +265,14 @@ public class Robot {
      * @return would be next move of a robot
      */
     public int nextMove(int destination) {
-    	int next_floor;
-    	next_floor = current_floor;
     	if(current_floor < destination){
-            return next_floor + 1;
+            return current_floor + 1;
         }
     	else if(current_floor > destination) {
-        	return next_floor - 1;
+        	return current_floor - 1;
         }
     	else {
-    		return next_floor;
+    		return current_floor;
     	}
     }
     
@@ -363,7 +348,7 @@ public class Robot {
 	
 	public boolean hasFloorPriority(int floor_num) {
 		if(priority == true) {
-			if(getDestination() == floor_num) {
+			if(nextMove(getDestination()) == floor_num) {
 				return true;
 			}
 		}
@@ -409,13 +394,11 @@ public class Robot {
 	
 	public void wrapItem(MailItem mailItem) {
 		assert((mailItem.isWrapped == false) && (mailItem.fragile));
-		System.out.println("WRAPPING ITEM");
 		mailItem.isWrapped = true;
 	}
 	
 	public void unwrapItem(MailItem mailItem) {
 		assert((mailItem.isWrapped == true) && (mailItem.fragile));
-		System.out.println("UNWRAPPING ITEM");
 		mailItem.isWrapped = false;
 	}
 	
