@@ -96,8 +96,6 @@ public class MailPool implements IMailPool {
 					
 					if(current.mailItem.getFragile() == true) {
 						if(caution_mode == false) {
-							System.out.println("SPECIAL ITEM CAME IN HOT");
-							System.out.println(" -But rejected cause caution mode off");
 							robot.getDelivery().reject(current.mailItem);
 							j.remove();
 							continue;
