@@ -9,6 +9,8 @@ import strategies.IMailPool;
 import java.util.Map;
 import java.util.TreeMap;
 
+import automail.Simulation.StatTracker;
+
 /**
  * The robot delivers mail!
  */
@@ -111,8 +113,8 @@ public class Robot {
     				}
                     /** Delivery complete, report this to the simulator! */
                     delivery.deliver(deliveryItem);
-                    Simulation.delivered_normal += 1;
-                    Simulation.total_weight_normal += deliveryItem.getWeight();
+                    Simulation.StatTracker.delivered_normal += 1;
+                    Simulation.StatTracker.total_weight_normal += deliveryItem.getWeight();
                     deliveryItem = null;
                     deliveryCounter++;
                     if(deliveryCounter > 3){  // Implies a simulation bug
@@ -136,22 +138,22 @@ public class Robot {
                 break;
     		case WRAP_STAGE_1:
     			changeState(RobotState.WRAP_STAGE_2);
-    			Simulation.total_wrapping_time += 1;
+    			Simulation.StatTracker.total_wrapping_time += 1;
     			break;
     		case WRAP_STAGE_2:
     			wrapItem(specialHand);
     			Automail.frag_floors[getRobotNumber()] = destination_floor;
-    			Simulation.total_wrapping_time += 1;
+    			Simulation.StatTracker.total_wrapping_time += 1;
     			priority = true;
     			changeState(RobotState.DELIVERING);
     			break;
     		case DELIVER_FRAGILE:
     			assert(specialHand.isWrapped);
     			unwrapItem(specialHand);
-    			Simulation.total_unwrapping_time += 1;
+    			Simulation.StatTracker.total_unwrapping_time += 1;
 				delivery.deliver(specialHand);
-				Simulation.delivered_caution += 1;
-				Simulation.total_weight_caution += specialHand.getWeight();
+				Simulation.StatTracker.delivered_caution += 1;
+				Simulation.StatTracker.total_weight_caution += specialHand.getWeight();
 				specialHand = null;
 				deliveryCounter++;
 				Automail.frag_floors[getRobotNumber()] = -1;
