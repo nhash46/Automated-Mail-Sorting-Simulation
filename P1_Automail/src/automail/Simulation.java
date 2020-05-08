@@ -124,6 +124,9 @@ public class Simulation {
             Clock.Tick();
         }
         printResults();
+        if(STATISTICS_ENABLED == true) {
+        	printStatistics();
+        }
     }
     
     static class StatTracker {
@@ -193,7 +196,10 @@ public class Simulation {
         System.out.println("T: "+Clock.Time()+" | Simulation complete!");
         System.out.println("Final Delivery time: "+Clock.Time());
         System.out.printf("Final Score: %.2f%n", total_score);
-        System.out.println("Packages delivered normally: "+StatTracker.delivered_normal);
+    }
+    
+    public static void printStatistics() {
+    	System.out.println("Packages delivered normally: "+StatTracker.delivered_normal);
         System.out.println("Packages delivered using caution: "+StatTracker.delivered_caution);
         System.out.println("Total weight of packages delivered normally: "+StatTracker.total_weight_normal);
         System.out.println("Total weight of packages delivered using caution: "+StatTracker.total_weight_caution);
