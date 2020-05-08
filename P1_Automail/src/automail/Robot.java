@@ -28,7 +28,6 @@ public class Robot {
     
     private boolean CAUTION_ENABLED;
     private boolean FRAGILE_ENABLED;
-    
     private MailItem deliveryItem = null;
     private MailItem tube = null;
     private MailItem specialHand = null;
